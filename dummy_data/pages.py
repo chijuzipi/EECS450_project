@@ -3,8 +3,10 @@
 # idList = [[id, parent], [id, parent], ...]
 def parent(filename):
     pages = open(filename, 'r')
-    idPair = []
     idList = []
+    for i in range(3000):
+        idList.append(0)
+    
     for line in pages.readlines():
         if not line.split():
             continue
@@ -14,11 +16,11 @@ def parent(filename):
         value = value.strip()
 
         if key == "id":
-            idPair.append(value)
+            pageId = int(value)
         elif key == "parent_id":
-            idPair.append(value)
-            idList.append(idPair)
-            idPair = []
+            parentId = int(value)
+            idList[pageId] = parentId
+            
 
     pages.close()
 
