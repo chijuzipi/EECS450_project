@@ -1,0 +1,43 @@
+      id = 1
+from_url = http://baidu.com/
+  to_url = http://www.baidu.com/
+
+      id = 2
+from_url = http://g.163.com/r?site=netease&affiliate=homepage&cat=homepage&type=logo300x100&location=1
+  to_url = http://www.163.com/special/00774imc/v_frame_bnr.html
+
+      id = 3
+from_url = http://g.163.com/r?site=netease&affiliate=homepage&cat=homepage&type=logo250x230&location=1
+  to_url = http://img1.126.net/channel1/html/dx14_0414.html
+
+      id = 4
+from_url = http://img1.126.net/channel1/html/gh_column3.html
+  to_url = http://www.gongheshengshi.com/adiframe/163/2013_100/index.htm
+
+      id = 5
+from_url = http://g.163.com/r?site=netease&affiliate=homepage&cat=homepage&type=column960x130&location=2
+  to_url = http://x.jd.com/ad?ad_id=15
+
+      id = 6
+from_url = http://g.163.com/r?site=netease&affiliate=homepage&cat=homepage&type=logo300x250&location=4
+  to_url = http://etg.qq.com/billboard/minsite/ads/163_index.shtml
+
+      id = 7
+from_url = http://www.cnn.com/
+  to_url = http://www.cnn.com/?refresh=1
+
+      id = 8
+from_url = http://www.telegraph.co.uk/
+  to_url = http://www.telegraph.co.uk/#source=refresh
+
+      id = 9
+from_url = http://www.rbc.ru/
+  to_url = http://www.rbc.ru/?/
+
+      id = 10
+from_url = http://rutracker.org/
+  to_url = http://rutracker.org/forum/index.php
+
+      id = 11
+from_url = http://samsung.com/
+  to_url = http://www.samsung.com/
