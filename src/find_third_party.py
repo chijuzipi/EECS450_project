@@ -103,10 +103,8 @@ def main(argv = None):
     for row in cursor.execute(headerQuery):
         keyValuePairList = row[0].split('; ')
         for line in keyValuePairList:
-            keyValuePairs = line.split('; ')
-            for keyValue in keyValuePairs:
-                key, value = keyValue.split('=', 1)
-                print((key, value, row[1]))
+            key, value = line.split('=', 1)
+            print((key, value, row[1]))
 
     database.close()
 
