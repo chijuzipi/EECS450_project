@@ -101,7 +101,12 @@ def main(argv = None):
                            TP.request_id = HRH.http_request_id
                      ORDER BY domain'''
     for row in cursor.execute(headerQuery):
-        print(row)
+        keyValuePairList = row[0].split('; ')
+        for line in keyValuePairList:
+            keyValuePairs = line.split('; ')
+            for keyValue in keyValuePairs:
+                key, value = keyValue.split('=', 1)
+                print((key, value, row[1]))
 
     database.close()
 
