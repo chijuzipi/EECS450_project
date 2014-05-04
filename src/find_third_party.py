@@ -1,12 +1,8 @@
 import sys
 import sqlite3
 import tldextract
+import interface
 from collections import defaultdict
-
-class Tree(defaultdict):
-    def __init__(self, value=None):
-        super(Tree, self).__init__(Tree)
-        self.value = value
 
 def transform(idlist):
     output = []
@@ -100,7 +96,7 @@ def main(argv = None):
     database.commit()
 
     # Query the headers corresponding to third party requests
-    headerQuery = '''SELECT value, domain
+    headerQuery = '''SELECT value, domain, TP.request_id
                      FROM third_party TP
                           cross join http_request_headers HRH
                      WHERE name = 'cookie' and
@@ -111,29 +107,18 @@ def main(argv = None):
         keyValuePairList = row[0].split('; ')
         for line in keyValuePairList:
             key, value = line.split('=', 1)
-            keyValueList.append((key, value, row[1]))
+            keyValueList.append((key, value, row[1], row[2]))
+            print(key, value, row[1], row[2])
 
     # Save the key value list to a table
     cursor.execute('''CREATE TABLE key_value_domain
                       (key    TEXT, 
                        value  TEXT, 
-                       domain TEXT)''')
-    cursor.executemany('INSERT INTO key_value_domain VALUES (?,?,?)',
+                       domain TEXT,
+                       request_id INT)''')
+    cursor.executemany('INSERT INTO key_value_domain VALUES (?,?,?,?)',
                        keyValueList)
     database.commit()
-
-    # Create a tree for domain-key-valuelist
-    valuelist = Tree()
-    domainListQuery = 'SELECT DISTINCT domain FROM key_value_domain'
-    keyListQuery = 'SELECT DISTINCT key FROM key_value_domain WHERE domain=?'
-    valueListQuery = '''SELECT value FROM key_value_domain
-                        WHERE domain = ? and
-                              key = ?'''
-    for domain in cursor.execute(domainListQuery):
-        for key in cursor.execute(keyListQuery, domain):
-            valuelist[domain][keys] = []
-            for value in cursor.execute(valueListQuery, domain, key):
-                valuelist[domain][keys].append(value)
 
 
     database.close()

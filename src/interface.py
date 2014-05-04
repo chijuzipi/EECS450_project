@@ -29,10 +29,12 @@ class RequestTokenSet:
         if self.host == None:
             self.host = token.host
         elif self.host != token.host:
-            print("Error, hosts are not consistent", file = sys.stderr)
+            #print("Error, hosts are not consistent", file = sys.stderr)
+            print >> sys.stderr,"Error, hosts are not consistent"
             return
         if self.findToken(token):
-            print("Error, " + token.id + " exist in this set", file = sys.stderr)
+            #print("Error, " + token.id + " exist in this set", file = sys.stderr)
+            print >> sys.stderr,"Error, ", token, " exist in this set"
             return
 
         self.storage.append(copy.copy(token))

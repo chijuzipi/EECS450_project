@@ -1,4 +1,6 @@
 import copy
+import interface
+import values_from_token
 import _suffix_tree
 
 def postOrderNodes(node):
@@ -178,7 +180,7 @@ sequences.'''
             if len(n.sequences) >= minimumOccurance*(seqLen-1):
                 l = len(n.pathLabel)
                 if l >= minimumLength:
-                    print 'n path indices are :',  n.pathIndices
+                    #print 'n path indices are :',  n.pathIndices
                     nArray.append(n)     
         output = self.getProcessNodeArray(nArray)
         for nf in output:
@@ -192,7 +194,7 @@ sequences.'''
             for j in range(i+1, len(nArray)):
                 isSubclass, node = self.isSubclass(nArray[i], nArray[j])
                 if isSubclass:
-                    print 'these are sub classes:', node.pathIndices
+                    #print 'these are sub classes:', node.pathIndices
                     if node in nArray2:
                         nArray2.remove(node)
         return nArray2 
@@ -228,7 +230,17 @@ sequences.'''
                 
 def process_test():
     print 'PROCESS TEST'
-    sequences = ['aaaaa111cccc', 'aaaaa222cccc', 'aaaa333cccc']
+    #sequences = ['aaaaa111cccc', 'aaaaa222cccc', 'aaaa333cccc']
+
+    data = open('../data/04.18/taobao.data', 'r')
+    hostSet = interface.RequestTokenSet()
+    for line in data.readlines():
+        key, value, host, request_id = line.split(" ")
+        a = interface.RequestToken(int(request_id), key, value, host, host)
+        hostSet.add(a)
+    requestString = values_from_token.stringFromTokenSet(hostSet)
+    sequences = [value for value in requestString.values()]
+
     terminator = getTerminator(sequences)
     st = GeneralisedSuffixTree(sequences, terminator)
     print '-'*70
