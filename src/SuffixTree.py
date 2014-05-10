@@ -192,7 +192,7 @@ sequences.'''
     def getProcessNodeArray(self, nArray):
         nArray2 = nArray[:] 
         for i in xrange(len(nArray)):
-            for j in range(i + 1, len(nArray)):
+            for j in xrange(i + 1, len(nArray)):
                 isSubclass, node = self.isSubclass(nArray[i], nArray[j])
                 if isSubclass:
                     #print 'these are sub classes:', node.pathIndices
@@ -213,7 +213,6 @@ sequences.'''
             for j in range(len(list2)):
                 seqlist1.append(list1[i][0])
                 seqlist2.append(list2[j][0])
-
                 if list1[i][0] == list2[j][0]:
                     if (list1[i][1] <= list2[j][1]) & ((list1[i][1] + l1) >= (list2[j][1] + l2)):
                         isn2 = True
@@ -221,12 +220,15 @@ sequences.'''
                         isn1 = True
                     else: 
                         return False, n2
+                
         if len(set(seqlist1)) != len(set(seqlist2)):
             return False, n2
         if isn2: 
             return True, n2
         if isn1: 
             return True, n1
+        return False, n2
+
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 
