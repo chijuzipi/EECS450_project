@@ -120,7 +120,6 @@ def main(argv = None):
                        keyValueList)
     database.commit()
 
-
     database.close()
 
     return 

@@ -1,6 +1,4 @@
-import copy
-import interface
-import values_from_token
+
 import _suffix_tree
 
 def postOrderNodes(node):
@@ -48,12 +46,13 @@ def children(node):
         yield c
         c = c.next
 
+# scanning through the sequence, find a unique character which does not contained by the sequence
 def getTerminator(sequences):
     for i in range(1, 128):
-        if chr(i) in sequences[i]:
+        if chr(i) in sequences:
             continue
         print 'the terminator is : ', chr(i)
-        return i
+        return i 
     print 'no terminator of 128 ASCII code can be used' 
 
 class SuffixTree(_suffix_tree.SuffixTree):
@@ -87,13 +86,8 @@ must not contain the special symbol $.'''
             yield n
 
     def generateInnerNodes(self):
-        'Iterator through all inner nodes in the tree.'
+        'Iterator through all leaves in the tree.'
         for n in innerNodes(self.root):
-            yield n
-
-    def generateQuasiRootNode(self):
-        'Iterator through all node that immediately follow the root'
-        for n in children(self.root):
             yield n
 
     # set class properties
@@ -104,13 +98,12 @@ must not contain the special symbol $.'''
     
     leaves = property(generateLeaves, None, None, "leaves")
     innerNodes = property(generateInnerNodes, None, None, "innerNodes")
-    quasiRootNodes = property(generateQuasiRootNode, None, None, "QuasiRootNode")
 
 class GeneralisedSuffixTree(SuffixTree):
 
     """A suffix tree for a set of strings."""
-
-    def __init__(self,sequences, terminator):        
+# specify what terminator will use
+    def __init__(self, sequences, terminator):        
         '''Build a generalised suffix tree.  The strings must not
 contain the special symbols $ or ascii numbers from 1 to the number of
 sequences.'''
@@ -118,18 +111,27 @@ sequences.'''
         self.sequences = sequences
         self.startPositions = [0]
         concatString = ''
+        #scanning through the sequence, find another unique character 
+        for j in (1, 128):
+            if chr(j) in sequences:
+                continue
+            if j == terminator:
+                continue
+            term = j
+            break
+        #every string is concated with the same terminator "term"
         for i in xrange(len(sequences)):
-            if unichr(i+1+terminator) in sequences[i]:
-                raise "The suffix tree string must not contain chr(%d)!"%(i+1)
-            concatString += sequences[i]+chr(i+1+terminator)
+            concatString += sequences[i]+chr(term)
             self.startPositions += [len(concatString)]
 
         self.startPositions += [self.startPositions[-1]+1] # empty string
         self.sequences += ['']
-        SuffixTree.__init__(self,concatString, chr(terminator))#F0000
+        print concatString
+        # the whole concatString will also concated with a terminator "terminator"
+        SuffixTree.__init__(self, concatString, chr(terminator))
         self._annotateNodes()
 
-    
+
     def _translateIndex(self,idx):
         'Translate a concat-string index into a (stringNo,idx) pair.'
         for i in xrange(len(self.startPositions)-1):
@@ -157,19 +159,18 @@ sequences.'''
 
                 n.pathIndices = pathIndices
                 n.sequences = [s for s in seqsInSubtree]
-    
-    def sharedSubstrings(self, minimumLength=0, minimumOccurance=1):
+
+    def sharedSubstrings(self,minimumLength=0):
         '''Iterator through shared sub-strings.  Returned as a list of triples
  (sequence,from,to).'''
-        seqLen = len(self.sequences)
-        #every inner node will represent a shared substring if its sequences more than 1  
         for n in self.innerNodes:
-            if len(n.sequences) >= minimumOccurance*(seqLen-1):
+            if len(n.sequences) == len(self.sequences) - 1:
                 l = len(n.pathLabel)
                 if l >= minimumLength:
-                    print 'node is qualified'
                     yield [(seq, idx, idx+l) for (seq,idx) in n.pathIndices]
-    
+
+    # add minimumOccurance input, this function return iterator which contain all the 
+    # information for the shared substring. The sub-sub strings are filtered.  
     def sharedSubstrings2(self, minimumLength=0, minimumOccurance=1):
         '''Iterator through shared sub-strings.  Returned as a list of triples
  (sequence,from,to).'''
@@ -180,21 +181,21 @@ sequences.'''
             if len(n.sequences) >= minimumOccurance*(seqLen-1):
                 l = len(n.pathLabel)
                 if l >= minimumLength:
-                    #print 'n path indices are :',  n.pathIndices
+                    print 'n path indices are :',  n.pathIndices
                     nArray.append(n)     
         output = self.getProcessNodeArray(nArray)
         for nf in output:
             l2 = len(nf.pathLabel)
             yield [(seq, idx, idx+l2) for (seq,idx) in nf.pathIndices]
             
-
+#---------------------------for filter sub-sub strings---------------------
     def getProcessNodeArray(self, nArray):
         nArray2 = nArray[:] 
         for i in range(len(nArray)):
             for j in range(i+1, len(nArray)):
                 isSubclass, node = self.isSubclass(nArray[i], nArray[j])
                 if isSubclass:
-                    #print 'these are sub classes:', node.pathIndices
+                    print 'these are sub classes:', node.pathIndices
                     if node in nArray2:
                         nArray2.remove(node)
         return nArray2 
@@ -226,53 +227,68 @@ sequences.'''
             return True, n2
         if isn1: 
             return True, n1
-                    
-                
-def process_test():
-    print 'PROCESS TEST'
-    #sequences = ['aaaaa111cccc', 'aaaaa222cccc', 'aaaa333cccc']
+#----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
 
-    data = open('../data/04.18/taobao.data', 'r')
-    hostSet = interface.RequestTokenSet()
-    for line in data.readlines():
-        key, value, host, request_id = line.split(" ")
-        a = interface.RequestToken(int(request_id), key, value, host, host)
-        hostSet.add(a)
-    requestString = values_from_token.stringFromTokenSet(hostSet)
-    sequences = [value for value in requestString.values()]
+def simple_test():
+    print 'SIMPLE TEST'
+    st = SuffixTree('mississippi','#')
+    assert st.string == 'mississippi#'
+    st = SuffixTree('mississippi')
+    assert st.string == 'mississippi$'
 
-    terminator = getTerminator(sequences)
-    st = GeneralisedSuffixTree(sequences, terminator)
-    print '-'*70
-    for shared in st.sharedSubstrings2(3, 0.5):
-        for seq,start,stop in shared:
-            print seq, '['+str(start)+':'+str(stop)+']',
-            print sequences[seq][start:stop],
-            print sequences[seq][:start]+'|'+sequences[seq][start:stop]+\
-                  '|'+sequences[seq][stop:]
-        print '------>'
-    print '='*70
-    
+    r = st.root
+    assert st.root == r
+    assert st.root.parent is None
+    assert st.root.firstChild.parent is not None
+    assert st.root.firstChild.parent == st.root
+
+    for n in st.postOrderNodes:
+        assert st.string[n.start:n.end+1] == n.edgeLabel
+
+    # collect path labels
+    for n in st.preOrderNodes:
+        p = n.parent
+        if p is None: # the root
+            n._pathLabel = ''
+        else:
+            n._pathLabel = p._pathLabel + n.edgeLabel
+
+    for n in st.postOrderNodes:
+        assert n.pathLabel == n._pathLabel
+
+    for l in st.leaves:
+        print 'leaf:', '"'+l.pathLabel+'"', ':', '"'+l.edgeLabel+'"'
+
+    for n in st.innerNodes:
+        print 'inner:', '"'+n.edgeLabel+'"'
+    print 'done.\n\n'
+
+    del st
+
 def generalised_test():
+
     print 'GENERALISED TEST'
-    sequences = ['aaaaa111cccc@#$', 'aaaaa222cccc@#$*()', '!@#$%^&*()_+{}":?><"']
+    sequences = ['aaaaa111cccc', 'aaaaa111cccc', 'aaaa333cccc']
     terminator = getTerminator(sequences)
     st = GeneralisedSuffixTree(sequences, terminator)
-    print '-'*70
-    for shared in st.sharedSubstrings(3, 0.5):
+    for shared in st.sharedSubstrings2(3, 1):
+        print '-'*70
         for seq,start,stop in shared:
             print seq, '['+str(start)+':'+str(stop)+']',
             print sequences[seq][start:stop],
             print sequences[seq][:start]+'|'+sequences[seq][start:stop]+\
                   '|'+sequences[seq][stop:]
-        print '------>'
     print '='*70
 
     print 'done.\n\n'
 
+
 def test():
+    #simple_test()
     generalised_test()
-    process_test()
+
 
 if __name__ == '__main__':
     test()
+
