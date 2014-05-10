@@ -23,8 +23,8 @@ def main():
         sequences = stringArrayDict[host]
         terminator = SuffixTree.getTerminator(sequences)
         st = SuffixTree.GeneralisedSuffixTree(sequences, terminator)
-        for shared in st.sharedSubstrings2(3, 1):
-            print '-'*70
+        for shared in st.sharedSubstrings2(5, 0.5):
+            print '-' * 70
             for seq,start,stop in shared:
                 print seq, '['+str(start)+':'+str(stop)+']',
                 print sequences[seq][start:stop],

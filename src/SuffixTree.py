@@ -112,8 +112,8 @@ sequences.'''
         self.startPositions = [0]
         concatString = ''
         #scanning through the sequence, find another unique character 
-        for j in (1, 128):
-            if chr(j) in sequences:
+        for j in range(1, 128):
+            if unichr(j) in sequences:
                 continue
             if j == terminator:
                 continue
@@ -121,14 +121,14 @@ sequences.'''
             break
         #every string is concated with the same terminator "term"
         for i in xrange(len(sequences)):
-            concatString += sequences[i]+chr(term)
+            concatString += sequences[i] + unichr(term)
             self.startPositions += [len(concatString)]
 
         self.startPositions += [self.startPositions[-1]+1] # empty string
         self.sequences += ['']
-        print concatString
+        #print concatString
         # the whole concatString will also concated with a terminator "terminator"
-        SuffixTree.__init__(self, concatString, chr(terminator))
+        SuffixTree.__init__(self, concatString, unichr(terminator))
         self._annotateNodes()
 
 
@@ -137,7 +137,7 @@ sequences.'''
         for i in xrange(len(self.startPositions)-1):
             if self.startPositions[i] <= idx < self.startPositions[i+1]:
                 return (i,idx-self.startPositions[i])
-        raise IndexError, "Index out of range: "+str(idx)
+        raise IndexError, "Index out of range: "+ str(idx)
 
     def _annotateNodes(self):
         for n in self.postOrderNodes:
@@ -181,7 +181,7 @@ sequences.'''
             if len(n.sequences) >= minimumOccurance*(seqLen-1):
                 l = len(n.pathLabel)
                 if l >= minimumLength:
-                    print 'n path indices are :',  n.pathIndices
+                    #print 'n path indices are :',  n.pathIndices
                     nArray.append(n)     
         output = self.getProcessNodeArray(nArray)
         for nf in output:
@@ -191,11 +191,11 @@ sequences.'''
 #---------------------------for filter sub-sub strings---------------------
     def getProcessNodeArray(self, nArray):
         nArray2 = nArray[:] 
-        for i in range(len(nArray)):
-            for j in range(i+1, len(nArray)):
+        for i in xrange(len(nArray)):
+            for j in range(i + 1, len(nArray)):
                 isSubclass, node = self.isSubclass(nArray[i], nArray[j])
                 if isSubclass:
-                    print 'these are sub classes:', node.pathIndices
+                    #print 'these are sub classes:', node.pathIndices
                     if node in nArray2:
                         nArray2.remove(node)
         return nArray2 
