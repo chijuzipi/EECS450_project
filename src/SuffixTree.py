@@ -169,18 +169,20 @@ sequences.'''
                 if l >= minimumLength:
                     yield [(seq, idx, idx+l) for (seq,idx) in n.pathIndices]
 
-    # add minimumOccurance input, this function return iterator which contain all the 
+    # Add minOccurance input, this function return iterator which contain all the 
     # information for the shared substring. The sub-sub strings are filtered.  
-    def sharedSubstrings2(self, minimumLength=0, minimumOccurance=1):
+    def sharedSubstrings2(self, numRequest, minLength = 0, minOccurance = 1):
         '''Iterator through shared sub-strings.  Returned as a list of triples
  (sequence,from,to).'''
         seqLen = len(self.sequences)
         nArray = []
-        #every inner node will represent a shared substring if its sequences more than 1  
+        # Every inner node will represent a shared
+        # substring if its sequences more than 1  
         for n in self.innerNodes:
-            if len(n.sequences) >= minimumOccurance*(seqLen-1):
+            #if len(n.sequences) >= minOccurance * (seqLen - 1):
+            if len(n.sequences) >= minOccurance * numRequest:
                 l = len(n.pathLabel)
-                if l >= minimumLength:
+                if l >= minLength:
                     #print 'n path indices are :',  n.pathIndices
                     nArray.append(n)     
         output = self.getProcessNodeArray(nArray)

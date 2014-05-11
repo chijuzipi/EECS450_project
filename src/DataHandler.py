@@ -18,7 +18,6 @@ def getTopPage(conn, parentId):
     if gradparentId == parentId:
         return parentId
     else:
-        print gradparentId
         return getTopPage(conn, gradparentId)
 
 def getHost(url):
