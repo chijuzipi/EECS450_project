@@ -121,12 +121,13 @@ sequences.'''
             break
         #every string is concated with the same terminator "term"
         for i in xrange(len(sequences)):
-            concatString += sequences[i] + unichr(term)
+            #concatString += sequences[i] + unichr(term)
+            concatString += sequences[i] + '$'
             self.startPositions += [len(concatString)]
 
         self.startPositions += [self.startPositions[-1]+1] # empty string
         self.sequences += ['']
-        #print concatString
+        print concatString
         # the whole concatString will also concated with a terminator "terminator"
         SuffixTree.__init__(self, concatString, unichr(terminator))
         self._annotateNodes()

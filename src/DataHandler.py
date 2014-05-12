@@ -1,4 +1,5 @@
 import sys
+import tldextract
 import sqlite3
 import Interface
 
@@ -22,15 +23,16 @@ def getTopPage(conn, parentId):
 
 def getHost(url):
     # Get rid of the empty URL
-    if url == "":
-        return url
+    #if url == "":
+        #return url
 
-    parts = url.split('//', 1)
-    domain = parts[0] + '//' + parts[1].split('/',1)[0]
-    if domain == 'error':
-        print "!!!!!!!!!error",
-        print url
-    return domain
+    #parts = url.split('//', 1)
+    #domain = parts[0] + '//' + parts[1].split('/',1)[0]
+    #if domain == 'error':
+        #print "!!!!!!!!!error",
+        #print url
+    host = tldextract.extract(url)
+    return host[1] + "." + host[2]
 
 def addTokensFromURL(req_id, referrer_host, host, url, tokenDict):
     params = url.split('//',1)[1].split('/',1)[1]

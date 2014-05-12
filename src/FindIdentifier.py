@@ -21,6 +21,7 @@ def main():
 
     print '=' * 70 + 'Finding Sub-string Start'
     for host in stringArrayDict.keys():
+    #for host in ["xinhuanet.com"]:
         numRequest = requestTokens.getRequestNumber(host)
         print("The number of request for " + host +
               " is " + str(numRequest) )
