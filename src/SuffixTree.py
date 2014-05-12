@@ -55,6 +55,16 @@ def getTerminator(sequences):
         return i 
     print 'no terminator of 128 ASCII code can be used' 
 
+def getTerminatorArray(sequences):
+    termList = []
+    for i in range(1, 128):
+        if chr(i) not in sequences:
+            termList.append(chr(i))
+    if len(termList) > len(sequences):
+        return termList
+    else:
+        return False
+
 class SuffixTree(_suffix_tree.SuffixTree):
 
     """A higher-level wrapper around the C suffix tree type,
@@ -111,25 +121,24 @@ sequences.'''
         self.sequences = sequences
         self.startPositions = [0]
         concatString = ''
-        #scanning through the sequence, find another unique character 
-        for j in range(1, 128):
-            if unichr(j) in sequences:
-                continue
-            if j == terminator:
-                continue
-            term = j
-            break
-        #every string is concated with the same terminator "term"
-        for i in xrange(len(sequences)):
-            #concatString += sequences[i] + unichr(term)
-            concatString += sequences[i] + '$'
-            self.startPositions += [len(concatString)]
+        if not terminator:
+            for i in xrange(len(sequences)):
+                concatString += sequences[i] + unichr(2) 
+                self.startPositions += [len(concatString)]
 
-        self.startPositions += [self.startPositions[-1]+1] # empty string
-        self.sequences += ['']
-        print concatString
-        # the whole concatString will also concated with a terminator "terminator"
-        SuffixTree.__init__(self, concatString, unichr(terminator))
+            self.startPositions += [self.startPositions[-1]+1] # empty string
+            self.sequences += ['']
+            SuffixTree.__init__(self, concatString, unichr(1))
+        else: 
+            print 'use array'
+            print terminator
+            for i in xrange(len(sequences)):
+                concatString += sequences[i] + terminator[i+1] 
+                self.startPositions += [len(concatString)]
+
+            self.startPositions += [self.startPositions[-1]+1] # empty string
+            self.sequences += ['']
+            SuffixTree.__init__(self, concatString, terminator[0])
         self._annotateNodes()
 
 
@@ -177,6 +186,7 @@ sequences.'''
  (sequence,from,to).'''
         seqLen = len(self.sequences)
         nArray = []
+        print 'minimum len is:', minLength
         # Every inner node will represent a shared
         # substring if its sequences more than 1  
         for n in self.innerNodes:
@@ -235,48 +245,13 @@ sequences.'''
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 
-def simple_test():
-    print 'SIMPLE TEST'
-    st = SuffixTree('mississippi','#')
-    assert st.string == 'mississippi#'
-    st = SuffixTree('mississippi')
-    assert st.string == 'mississippi$'
-
-    r = st.root
-    assert st.root == r
-    assert st.root.parent is None
-    assert st.root.firstChild.parent is not None
-    assert st.root.firstChild.parent == st.root
-
-    for n in st.postOrderNodes:
-        assert st.string[n.start:n.end+1] == n.edgeLabel
-
-    # collect path labels
-    for n in st.preOrderNodes:
-        p = n.parent
-        if p is None: # the root
-            n._pathLabel = ''
-        else:
-            n._pathLabel = p._pathLabel + n.edgeLabel
-
-    for n in st.postOrderNodes:
-        assert n.pathLabel == n._pathLabel
-
-    for l in st.leaves:
-        print 'leaf:', '"'+l.pathLabel+'"', ':', '"'+l.edgeLabel+'"'
-
-    for n in st.innerNodes:
-        print 'inner:', '"'+n.edgeLabel+'"'
-    print 'done.\n\n'
-
-    del st
 
 def generalised_test():
 
     print 'GENERALISED TEST'
     sequences = ['aaaaa111cccc', 'aaaaa111cccc', 'aaaa333cccc']
-    terminator = getTerminator(sequences)
-    st = GeneralisedSuffixTree(sequences, terminator)
+    terminatorArray = getTerminatorArray(sequences)
+    st = GeneralisedSuffixTree(sequences, terminatorArray)
     for shared in st.sharedSubstrings2(3, 1):
         print '-'*70
         for seq,start,stop in shared:
