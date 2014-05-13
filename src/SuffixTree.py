@@ -122,6 +122,7 @@ sequences.'''
         self.startPositions = [0]
         concatString = ''
         if not terminator:
+            print 'use fixed terminator'
             for i in xrange(len(sequences)):
                 concatString += sequences[i] + unichr(2) 
                 self.startPositions += [len(concatString)]
@@ -132,6 +133,7 @@ sequences.'''
         else: 
             print 'use array'
             print terminator
+            #print 'length of the array:', len(terminator)
             for i in xrange(len(sequences)):
                 concatString += sequences[i] + terminator[i+1] 
                 self.startPositions += [len(concatString)]
@@ -186,7 +188,6 @@ sequences.'''
  (sequence,from,to).'''
         seqLen = len(self.sequences)
         nArray = []
-        print 'minimum len is:', minLength
         # Every inner node will represent a shared
         # substring if its sequences more than 1  
         for n in self.innerNodes:
@@ -251,8 +252,9 @@ def generalised_test():
     print 'GENERALISED TEST'
     sequences = ['aaaaa111cccc', 'aaaaa111cccc', 'aaaa333cccc']
     terminatorArray = getTerminatorArray(sequences)
+    print 'length of the terminatorArray',len(terminatorArray)
     st = GeneralisedSuffixTree(sequences, terminatorArray)
-    for shared in st.sharedSubstrings2(3, 1):
+    for shared in st.sharedSubstrings2(3, 3):
         print '-'*70
         for seq,start,stop in shared:
             print seq, '['+str(start)+':'+str(stop)+']',
