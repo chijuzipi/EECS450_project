@@ -107,6 +107,11 @@ def getTokens(conn, pageId, tokenDict):
                 #if old_pair == new_pair[1]:
                     #print new_pair
             #pairSet.append(new_pair[1])
+def getTopHost(conn, topId):
+    c=conn.cursor()
+    for row in c.execute("SELECT location FROM pages WHERE id = '%d'" % topId):
+        topHost=row[0]
+    return getHost(topHost)
 
 def tokenDictFromFile(sqliteFile):
     conn = sqlite3.connect(sqliteFile)
@@ -132,13 +137,17 @@ def tokenDictFromFile(sqliteFile):
         if topParentId == 0:
             continue
 
-        if topParentId != pageId: # Third-party requests
+        topHost = getTopHost(conn,topParentId)
+        host = getHost(location)
+        #print host
+
+	    #print getHost(location)
+        if host != topHost: # Third-party requests
             num += 1
+            print host,
+            print topHost
             getTokens(conn, pageId, tokenDict)
-            #print ('thirdParty pageId is '),
-            #print(pageId),
-            #print (' topParentId is '),
-            #print(topParentId)
+
         else:
             pass
             #print('Not a third party request')
