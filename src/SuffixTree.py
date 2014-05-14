@@ -65,6 +65,16 @@ def getUnicodeTerminator(sequences):
                 return i 
     print 'No terminator of Unicode can be used' 
 
+def getTerminatorArray(sequences):
+    termList = []
+    for i in range(1, 128):
+        if chr(i) not in sequences:
+            termList.append(chr(i))
+    if len(termList) > len(sequences):
+        return termList
+    else:
+        return False
+
 class SuffixTree(_suffix_tree.SuffixTree):
 
     """A higher-level wrapper around the C suffix tree type,
@@ -124,14 +134,6 @@ class GeneralisedSuffixTree(SuffixTree):
         concatString = u''
 
         for i in xrange(len(sequences)):
-            # Scanning through the sequence, find another unique character 
-            #for j in range(128, 10000):
-                #if unichr(j) in sequences[i]:
-                    #continue
-                #if j == terminator:
-                    #continue
-                #term = j
-                #break
             if unichr(terminator + i + 1) in sequences[i]:
                 print("The suffix tree string must not contain chr(%d)!"%(terminator + i + 1))
             concatString += sequences[i] + unichr(terminator + i + 1)
@@ -252,49 +254,15 @@ class GeneralisedSuffixTree(SuffixTree):
 #----------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------
 
-def simple_test():
-    print 'SIMPLE TEST'
-    st = SuffixTree('mississippi','#')
-    assert st.string == 'mississippi#'
-    st = SuffixTree('mississippi')
-    assert st.string == 'mississippi$'
-
-    r = st.root
-    assert st.root == r
-    assert st.root.parent is None
-    assert st.root.firstChild.parent is not None
-    assert st.root.firstChild.parent == st.root
-
-    for n in st.postOrderNodes:
-        assert st.string[n.start:n.end+1] == n.edgeLabel
-
-    # collect path labels
-    for n in st.preOrderNodes:
-        p = n.parent
-        if p is None: # the root
-            n._pathLabel = ''
-        else:
-            n._pathLabel = p._pathLabel + n.edgeLabel
-
-    for n in st.postOrderNodes:
-        assert n.pathLabel == n._pathLabel
-
-    for l in st.leaves:
-        print 'leaf:', '"'+l.pathLabel+'"', ':', '"'+l.edgeLabel+'"'
-
-    for n in st.innerNodes:
-        print 'inner:', '"'+n.edgeLabel+'"'
-    print 'done.\n\n'
-
-    del st
 
 def generalised_test():
 
     print 'GENERALISED TEST'
     sequences = ['aaaaa111cccc', 'aaaaa111cccc', 'aaaa333cccc']
-    terminator = getTerminator(sequences)
-    st = GeneralisedSuffixTree(sequences, terminator)
-    for shared in st.sharedSubstrings2(3, 1):
+    terminatorArray = getTerminatorArray(sequences)
+    print 'length of the terminatorArray',len(terminatorArray)
+    st = GeneralisedSuffixTree(sequences, terminatorArray)
+    for shared in st.sharedSubstrings2(3, 3):
         print '-'*70
         for seq,start,stop in shared:
             print seq, '['+ str(start) + ':' + str(stop) + ']',

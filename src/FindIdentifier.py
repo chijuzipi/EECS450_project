@@ -34,9 +34,11 @@ def main():
             print '-' * 70
             for seq,start,stop in shared:
                 print seq, '[' + str(start) + ':' + str(stop) + ']',
+                print unichr(10084),'',
                 print sequences[seq][start:stop],
-                print sequences[seq][:start] + '|' + sequences[seq][start:stop] + \
-                      '|' + sequences[seq][stop:]
+                print unichr(10084),'',
+                print sequences[seq][:start] +unichr(10073) + sequences[seq][start:stop] + \
+                      unichr(10073) + sequences[seq][stop:]
         print '='*70
     
         print 'done.\n\n'
