@@ -1,5 +1,7 @@
-
+import sys
+reload(sys)
 import _suffix_tree
+sys.setdefaultencoding("utf-8")
 
 def postOrderNodes(node):
     '''Iterator through all nodes in the sub-tree rooted in node in
@@ -46,14 +48,22 @@ def children(node):
         yield c
         c = c.next
 
-# scanning through the sequence, find a unique character which does not contained by the sequence
+# Scanning through the sequence, find a unique character which does not contained by the sequence
 def getTerminator(sequences):
     for i in range(1, 128):
         if chr(i) in sequences:
             continue
-        print 'the terminator is : ', chr(i)
+        print 'The terminator is : ', chr(i)
         return i 
-    print 'no terminator of 128 ASCII code can be used' 
+    print 'No terminator of 128 ASCII code can be used' 
+
+def getUnicodeTerminator(sequences):
+    for i in range(1000, 10000):
+        for j in xrange(len(sequences)):
+            if unichr(i) not in sequences[j]:
+                print 'The terminator is : ', unichr(i)
+                return i 
+    print 'No terminator of Unicode can be used' 
 
 class SuffixTree(_suffix_tree.SuffixTree):
 
@@ -67,7 +77,7 @@ that can be written using the primitives exported from C.  """
         '''Build a suffix tree from the input string s. The string
 must not contain the special symbol $.'''
         if t in s:
-            raise "The suffix tree string must not contain terminal symbol!"
+            raise Exception, "The suffix tree string must not contain terminal symbol!"
         _suffix_tree.SuffixTree.__init__(self,s,t)
 
     def generatePostOrderNodes(self):
@@ -104,39 +114,43 @@ class GeneralisedSuffixTree(SuffixTree):
     """A suffix tree for a set of strings."""
 # specify what terminator will use
     def __init__(self, sequences, terminator):        
-        '''Build a generalised suffix tree.  The strings must not
-contain the special symbols $ or ascii numbers from 1 to the number of
-sequences.'''
+        '''Build a generalised suffix tree. 
+           The strings must not contain the special
+           symbols $ or ascii numbers from 1 to the
+           number of sequences.'''
 
         self.sequences = sequences
         self.startPositions = [0]
-        concatString = ''
-        #scanning through the sequence, find another unique character 
-        for j in range(1, 128):
-            if unichr(j) in sequences:
-                continue
-            if j == terminator:
-                continue
-            term = j
-            break
-        #every string is concated with the same terminator "term"
+        concatString = u''
+
         for i in xrange(len(sequences)):
-            #concatString += sequences[i] + unichr(term)
-            concatString += sequences[i] + '$'
+            # Scanning through the sequence, find another unique character 
+            #for j in range(128, 10000):
+                #if unichr(j) in sequences[i]:
+                    #continue
+                #if j == terminator:
+                    #continue
+                #term = j
+                #break
+            if unichr(terminator + i + 1) in sequences[i]:
+                print("The suffix tree string must not contain chr(%d)!"%(terminator + i + 1))
+            concatString += sequences[i] + unichr(terminator + i + 1)
             self.startPositions += [len(concatString)]
 
-        self.startPositions += [self.startPositions[-1]+1] # empty string
+        self.startPositions += [self.startPositions[-1] + 1] # empty string
         self.sequences += ['']
         print concatString
-        # the whole concatString will also concated with a terminator "terminator"
+        print self.sequences
+        # The whole concatString will also concated with a terminator "terminator"
+
         SuffixTree.__init__(self, concatString, unichr(terminator))
         self._annotateNodes()
 
 
     def _translateIndex(self,idx):
         'Translate a concat-string index into a (stringNo,idx) pair.'
-        for i in xrange(len(self.startPositions)-1):
-            if self.startPositions[i] <= idx < self.startPositions[i+1]:
+        for i in xrange(len(self.startPositions) - 1):
+            if self.startPositions[i] <= idx < self.startPositions[i + 1]:
                 return (i,idx-self.startPositions[i])
         raise IndexError, "Index out of range: "+ str(idx)
 
@@ -186,12 +200,15 @@ sequences.'''
                 if l >= minLength:
                     #print 'n path indices are :',  n.pathIndices
                     nArray.append(n)     
+
         output = self.getProcessNodeArray(nArray)
         for nf in output:
             l2 = len(nf.pathLabel)
             yield [(seq, idx, idx+l2) for (seq,idx) in nf.pathIndices]
             
-#---------------------------for filter sub-sub strings---------------------
+#----------------------------
+# For filter sub-sub strings
+#----------------------------
     def getProcessNodeArray(self, nArray):
         nArray2 = nArray[:] 
         for i in xrange(len(nArray)):
@@ -280,7 +297,7 @@ def generalised_test():
     for shared in st.sharedSubstrings2(3, 1):
         print '-'*70
         for seq,start,stop in shared:
-            print seq, '['+str(start)+':'+str(stop)+']',
+            print seq, '['+ str(start) + ':' + str(stop) + ']',
             print sequences[seq][start:stop],
             print sequences[seq][:start]+'|'+sequences[seq][start:stop]+\
                   '|'+sequences[seq][stop:]

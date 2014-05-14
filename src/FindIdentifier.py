@@ -19,7 +19,7 @@ def main():
     requestTokens = DataHandler.tokenDictFromFile(database)
     stringArrayDict = requestTokens.toStringArrayDict()
 
-    print '=' * 70 + 'Finding Sub-string Start'
+    print '=' * 20 + 'Finding Sub-string Start' + '=' * 20
     for host in stringArrayDict.keys():
     #for host in ["xinhuanet.com"]:
         numRequest = requestTokens.getRequestNumber(host)
@@ -27,7 +27,7 @@ def main():
               " is " + str(numRequest) )
 
         sequences = stringArrayDict[host]
-        terminator = SuffixTree.getTerminator(sequences)
+        terminator = SuffixTree.getUnicodeTerminator(sequences)
         st = SuffixTree.GeneralisedSuffixTree(sequences, terminator)
 
         for shared in st.sharedSubstrings2(numRequest, 5, 0.5):
