@@ -76,10 +76,11 @@ class RequestTokenDict:
             tokenList = self.tokenDict[host]
     
             if host not in stringArrayDict.keys():
-                stringArrayDict[host] = []
+                stringArrayDict[host] = ([], [])
     
             for token in tokenList:
-                stringArrayDict[host].append(token.value)
+                stringArrayDict[host][0].append(token.value)
+                stringArrayDict[host][1].append(token.id)
     
         return stringArrayDict
 

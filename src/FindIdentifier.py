@@ -20,12 +20,15 @@ def main():
     stringArrayDict = requestTokens.toStringArrayDict()
 
     print '=' * 20 + 'Finding Sub-string Start' + '=' * 20
-    for host in stringArrayDict.keys():
+    #for host in stringArrayDict.keys():
+    for host in ['google.com']:
         numRequest = requestTokens.getRequestNumber(host)
         print("The number of request for " + host +
               " is " + str(numRequest) )
 
-        sequences = stringArrayDict[host]
+        sequences, idList = stringArrayDict[host]
+        print sequences
+        print idList
         terminator = SuffixTree.getUnicodeTerminator(sequences)
         st = SuffixTree.GeneralisedSuffixTree(sequences, terminator)
 
