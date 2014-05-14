@@ -20,28 +20,6 @@ class RequestToken:
 
     def __repr__(self):
         return str(self.id) + "----" + self.name + "-----" + self.value
-#class RequestTokenSet:
-    #def __init__(self):
-        #self.storage = []
-        #self.host = None
-
-    #def addToSet(self,token):
-        #if self.host == None:
-            #self.host = token.host
-        #elif self.host != token.host:
-            #print >> sys.stderr,"Error, hosts are not consistent"
-            #return
-        #if self.findToken(token):
-            #print >> sys.stderr,"Error, ", token, " exist in this set"
-            #return
-
-        #self.storage.append(copy.copy(token))
-
-    #def findToken(self,token):
-        #for t in self.storage:
-            #if  (token.id == t.id and token.name == t.name and token.value == t.value and token.host == t.host):
-                #return True
-        #return False
 
 class RequestTokenDict:
     def __init__(self):
