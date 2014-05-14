@@ -20,28 +20,30 @@ def main():
     stringArrayDict = requestTokens.toStringArrayDict()
 
     print '=' * 20 + 'Finding Sub-string Start' + '=' * 20
-    #for host in stringArrayDict.keys():
-    for host in ['google.com']:
+    for host in stringArrayDict.keys():
         numRequest = requestTokens.getRequestNumber(host)
         print("The number of request for " + host +
               " is " + str(numRequest) )
 
         sequences, idList = stringArrayDict[host]
-        print sequences
-        print idList
         terminator = SuffixTree.getUnicodeTerminator(sequences)
         st = SuffixTree.GeneralisedSuffixTree(sequences, terminator)
 
         for shared in st.sharedSubstrings2(numRequest, 5, 0.5):
             print '-' * 70
-            print "The occurance is " + str(sum(1 for x in shared) / float(numRequest));
+            
+            occurRequest = []
             for seq,start,stop in shared:
+                occurRequest.append(idList[seq])
                 print seq, '[' + str(start) + ':' + str(stop) + ']',
                 print unichr(10084),'',
                 print sequences[seq][start:stop],
                 print unichr(10084),'',
                 print sequences[seq][:start] +unichr(10073) + sequences[seq][start:stop] + \
                       unichr(10073) + sequences[seq][stop:]
+
+            print "The occurance is " + str(len(set(occurRequest)) / float(numRequest));
+
         print '='*70
     
         print 'done.\n\n'

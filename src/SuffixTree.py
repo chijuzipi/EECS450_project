@@ -142,7 +142,6 @@ class GeneralisedSuffixTree(SuffixTree):
         self.startPositions += [self.startPositions[-1] + 1] # empty string
         self.sequences += ['']
         print concatString
-        print self.sequences
         # The whole concatString will also concated with a terminator "terminator"
 
         SuffixTree.__init__(self, concatString, unichr(terminator))
@@ -200,7 +199,6 @@ class GeneralisedSuffixTree(SuffixTree):
             if len(n.sequences) >= minOccurance * numRequest:
                 l = len(n.pathLabel)
                 if l >= minLength:
-                    #print 'n path indices are :',  n.pathIndices
                     nArray.append(n)     
 
         output = self.getProcessNodeArray(nArray)
@@ -217,7 +215,6 @@ class GeneralisedSuffixTree(SuffixTree):
             for j in xrange(i + 1, len(nArray)):
                 isSubclass, node = self.isSubclass(nArray[i], nArray[j])
                 if isSubclass:
-                    #print 'these are sub classes:', node.pathIndices
                     if node in nArray2:
                         nArray2.remove(node)
         return nArray2 
