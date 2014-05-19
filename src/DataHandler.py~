@@ -36,10 +36,6 @@ def getHost(url):
 
 def addTokensFromURL(req_id, referrer_host, host, url, tokenDict):
     params = url.split('//',1)[1].split('/',1)[1]
-    name = 'param'
-    value = params
-    token = Interface.RequestToken(req_id, name, value, host, referrer_host)
-    tokenDict.addToDict(token)
     name = 'param_path'
     value = params.split('?',1)[0]
     token = Interface.RequestToken(req_id, name, value, host, referrer_host)
@@ -143,7 +139,9 @@ def tokenDictFromFile(sqliteFile):
 
         topHost = getTopHost(conn,topParentId)
         host = getHost(location)
+        #print host
 
+	    #print getHost(location)
         if host != topHost: # Third-party requests
             num += 1
             #print host,
