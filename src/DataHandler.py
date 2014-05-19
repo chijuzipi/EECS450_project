@@ -36,6 +36,10 @@ def getHost(url):
 
 def addTokensFromURL(req_id, referrer_host, host, url, tokenDict):
     params = url.split('//',1)[1].split('/',1)[1]
+    name = 'param'
+    value = params
+    token = Interface.RequestToken(req_id, name, value, host, referrer_host)
+    tokenDict.addToDict(token)
     name = 'param_path'
     value = params.split('?',1)[0]
     token = Interface.RequestToken(req_id, name, value, host, referrer_host)
@@ -82,6 +86,7 @@ def addTokensFromHeader(req_id, referrer_host, host, names, values, tokenDict):
 
 def getTokens(conn, pageId, tokenDict):
     c = conn.cursor()
+    reqNum=0
     for row in c.execute('''SELECT id, url, referrer
                             FROM http_requests
                             WHERE page_id = ?''', (pageId, )):
@@ -91,6 +96,7 @@ def getTokens(conn, pageId, tokenDict):
             print pageId
         referrer_host = getHost(row[2])
         host = getHost(row[1])
+        reqNum+=1
         #print referrer_host
         addTokensFromURL(req_id, referrer_host, host, url, tokenDict)
         #print req_id
@@ -98,6 +104,7 @@ def getTokens(conn, pageId, tokenDict):
                                  FROM http_request_headers
                                  WHERE http_request_id = ?''', (req_id, )):
             addTokensFromHeader(req_id, referrer_host, host, row2[0], row2[1], tokenDict)
+        return reqNum
 
 #def findIdentifier(tokenSet):
     #pairSet=[]
@@ -119,6 +126,7 @@ def tokenDictFromFile(sqliteFile):
     c = conn.cursor()
     tokenDict = Interface.RequestTokenDict()
 
+    reqNum=0
     num = 0
     for row in c.execute('SELECT id, location, parent_id FROM pages'):
         pageId = row[0]
@@ -139,14 +147,12 @@ def tokenDictFromFile(sqliteFile):
 
         topHost = getTopHost(conn,topParentId)
         host = getHost(location)
-        #print host
 
-	    #print getHost(location)
         if host != topHost: # Third-party requests
             num += 1
-            print host,
-            print topHost
-            getTokens(conn, pageId, tokenDict)
+            #print host,
+            #print topHost
+            reqNum+=getTokens(conn, pageId, tokenDict)
 
         else:
             pass
@@ -154,7 +160,8 @@ def tokenDictFromFile(sqliteFile):
             
     conn.close()
     #print "third party pages number",
-    #print num
+    print num
+    print reqNum
     tokenDict.printDict()
 
     return tokenDict
