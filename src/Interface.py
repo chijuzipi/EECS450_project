@@ -48,6 +48,8 @@ class RequestTokenDict:
         print tokenNum
         textFile.close()
 
+    # The StringArrayDict has a tuple of lists for each host
+    #     stringArrayDict[host] = ([values], [request Ids])
     def toStringArrayDict(self):
         stringArrayDict = {}
         for host in self.tokenDict.keys():
@@ -61,15 +63,6 @@ class RequestTokenDict:
                 stringArrayDict[host][1].append(token.id)
     
         return stringArrayDict
-
-    def getRequestNumber(self, host):
-        requestList = []
-        for token in self.tokenDict[host]:
-            requestList.append(token.id)
-
-        requestList = set(requestList)
-
-        return len(requestList)
 
 #type == 1: directly comparing key and value, 
 #            uniqueness shows how unique it is for this identifier
