@@ -156,7 +156,7 @@ def tokenDictFromFile(sqliteFile):
             
     conn.close()
     #print "third party pages number",
-    #print num
+    print num
     tokenDict.printDict()
 
     return tokenDict
