@@ -57,78 +57,39 @@ def addTokensFromURL(req_id, referrer_host, host, url, tokenDict):
         token = Interface.RequestToken(req_id, name, value, host, referrer_host)
         tokenDict.addToDict(token)
 
-def addTokensFromHeader(conn, req_id, referrer_host, host, tokenDict):
-    c=conn.cursor()
-    for row in c.execute('''SELECT name, value
-                                 FROM http_request_headers
-                                 WHERE http_request_id = ?''', (req_id, )):
-        names = row[0]
-        values=row[1]
-        if(names == ''):
-            print 'error'
-        if(names != 'cookie'):
-            token = Interface.RequestToken(req_id, names, values, host, referrer_host)
+def addTokensFromHeader(req_id, referrer_host, host, names, values, tokenDict):
+    if(names == ''):
+        print 'error'
+    if(names != 'cookie'):
+        token = Interface.RequestToken(req_id, names, values, host, referrer_host)
+        tokenDict.addToDict(token)
+    else:
+        pairs = values.split(';')
+        for pair in pairs:
+            if pair.find('=') == -1:
+                print "error!! No = in cookies"
+            name = "cookie_" + pair.split('=',1)[0]
+            value = pair.split('=',1)[1]
+            token = Interface.RequestToken(req_id, name, value, host, referrer_host)
             tokenDict.addToDict(token)
-        else:
-            pairs = values.split(';')
-            for pair in pairs:
-                if pair.find('=') == -1:
-                    print "error!! No = in cookies"
-                name = "cookie_" + pair.split('=',1)[0]
-                value = pair.split('=',1)[1]
-                token = Interface.RequestToken(req_id, name, value, host, referrer_host)
-                tokenDict.addToDict(token)
 
+#def getKeyValue(name, value, name_value_pairs):
+    #if(name != 'cookie' and name != ''):
+        #pair = [name, value]
+        ##print pair
+    #else:
+        #pair_list = value.split(";")
+        #for row in pair_list:
+            #pair=["cookie_"+row.split("=",1)[0], row.split("=",1)[1]]
+            ##print pair
+            #name_value_pairs.append(pair)
 
-def getTopHost(conn, topId):
-    c=conn.cursor()
-    for row in c.execute("SELECT location FROM pages WHERE id = '%d'" % topId):
-        topHost=row[0]
-    return getHost(topHost)
-
-def checkThirdPartyReq(conn, pageId):
-    c=conn.cursor()
-
-    for row in c.execute('SELECT location, parent_id FROM pages WHERE id="%d"' % pageId):
-        location = row[0]
-        parentId = row[1]
-
-        if pageId == -1 or parentId == -1:    # no parent
-            #print 'get rid of -1'
-            return False
-
-        if location == 'about:blank':
-            #print 'get rid of blank page'
-            return False
-
-        topParentId = getTopPage(conn, parentId)
-        if topParentId == 0:
-            return False
-
-        topHost = getTopHost(conn,topParentId)
-        host = getHost(location)
-
-        if host != topHost: # Third-party requests
-            return True
-            #print host,
-            #print topHost
-        else:
-            return False
-
-
-def tokenDictFromFile(sqliteFile):
-    conn = sqlite3.connect(sqliteFile)
-
+def getTokens(conn, pageId, tokenDict):
     c = conn.cursor()
-    tokenDict = Interface.RequestTokenDict()
-
     reqNum=0
-    num = 0
-
-    for row in c.execute('SELECT id, url, referrer, page_id FROM http_requests'):
-        page_id = row[3]
-        if checkThirdPartyReq(conn, page_id) != True:
-            continue
+    for row in c.execute('''SELECT id, url, referrer
+                            FROM http_requests
+                            WHERE page_id = ?''', (pageId, )):
         req_id = row[0]
         url = row[1]
         if url == 'error':
@@ -139,10 +100,62 @@ def tokenDictFromFile(sqliteFile):
         #print referrer_host
         addTokensFromURL(req_id, referrer_host, host, url, tokenDict)
         #print req_id
-        addTokensFromHeader(conn, req_id, referrer_host, host, tokenDict)
+        for row2 in c.execute('''SELECT name, value
+                                 FROM http_request_headers
+                                 WHERE http_request_id = ?''', (req_id, )):
+            addTokensFromHeader(req_id, referrer_host, host, row2[0], row2[1], tokenDict)
+        return reqNum
 
+#def findIdentifier(tokenSet):
+    #pairSet=[]
+    #for token in tokenSet.storage:
+        #for new_pair in token.name_value_pairs:
+            #for old_pair in pairSet:
+                #if old_pair == new_pair[1]:
+                    #print new_pair
+            #pairSet.append(new_pair[1])
+def getTopHost(conn, topId):
+    c=conn.cursor()
+    for row in c.execute("SELECT location FROM pages WHERE id = '%d'" % topId):
+        topHost=row[0]
+    return getHost(topHost)
 
-    
+def tokenDictFromFile(sqliteFile):
+    conn = sqlite3.connect(sqliteFile)
+
+    c = conn.cursor()
+    tokenDict = Interface.RequestTokenDict()
+
+    reqNum=0
+    num = 0
+    for row in c.execute('SELECT id, location, parent_id FROM pages'):
+        pageId = row[0]
+        location = row[1]
+        parentId = row[2]
+
+        if pageId == -1 or parentId == -1:    # no parent
+            #print 'get rid of -1'
+            continue
+
+        if location == 'about:blank':
+            #print 'get rid of blank page'
+            continue
+
+        topParentId = getTopPage(conn, parentId)
+        if topParentId == 0:
+            continue
+
+        topHost = getTopHost(conn,topParentId)
+        host = getHost(location)
+
+        if host != topHost: # Third-party requests
+            num += 1
+            #print host,
+            #print topHost
+            reqNum+=getTokens(conn, pageId, tokenDict)
+
+        else:
+            pass
             #print('Not a third party request')
             
     conn.close()

@@ -177,15 +177,6 @@ class GeneralisedSuffixTree(SuffixTree):
                 n.pathIndices = pathIndices
                 n.sequences = [s for s in seqsInSubtree]
 
-    #def sharedSubstrings(self,minimumLength=0):
-        ## Iterator through shared sub-strings.
-        ## Returned as a list of triples (sequence,from,to)
-        #for n in self.innerNodes:
-            #if len(n.sequences) == len(self.sequences) - 1:
-                #l = len(n.pathLabel)
-                #if l >= minimumLength:
-                    #yield [(seq, idx, idx+l) for (seq,idx) in n.pathIndices]
-
     # Add minOccurance input, this function return iterator which contain all the 
     # information for the shared substring. The sub-sub strings are filtered.  
     def sharedSubstrings(self, requestId, minLength = 0, minOccurance = 1):
@@ -207,66 +198,31 @@ class GeneralisedSuffixTree(SuffixTree):
     
                 occurance = len(set(requestIdList)) / float(numRequest)
                 if (len(s) >= minLength) and (occurance >= minOccurance):
+                    #print "Occurance is " + str(occurance) + " for " + n.pathLabel
                     nArray.append(n)     
                     #yield [(seq, idx, idx + len(s)) for (seq, idx) in n.pathIndices]
 
         for n in self.filterSubSubstrings(nArray):
             l = len(n.pathLabel)
             print "\n" + "-" * 70
-            print "Occurance is " + str(occurance) + " for " + n.pathLabel
             yield [(seq, idx, idx + l) for (seq, idx) in n.pathIndices]
             
     def filterSubSubstrings(self, nArray):
-        removeList = []
+        resultArray = []
+        toAppend = True
         for n in nArray:
             for refNode in nArray:
                 if (n.pathLabel != refNode.pathLabel and
                     n.pathLabel in refNode.pathLabel):
-                    removeList.append(n)
+                    toAppend = False
+                    break
 
-        for n in removeList:
-            if n in nArray:
-                nArray.remove(n)
+            if toAppend:
+                resultArray.append(n)
 
-        return nArray
+            toAppend = True
 
-        #nArray2 = nArray[:] 
-        #for i in xrange(len(nArray)):
-            #for j in xrange(i + 1, len(nArray)):
-                #isSubclass, node = self.isSubclass(nArray[i], nArray[j])
-                #if isSubclass:
-                    #if node in nArray2:
-                        #nArray2.remove(node)
-        #return nArray2 
-
-    #def isSubclass(self, n1, n2):
-        #list1 = n1.pathIndices
-        #l1 = len(n1.pathLabel)
-        #list2 = n2.pathIndices
-        #l2 = len(n2.pathLabel)
-        #isn1 = False
-        #isn2 = False
-        #seqlist1 = []
-        #seqlist2 = []
-        #for i in range(len(list1)):
-            #for j in range(len(list2)):
-                #seqlist1.append(list1[i][0])
-                #seqlist2.append(list2[j][0])
-                #if list1[i][0] == list2[j][0]:
-                    #if (list1[i][1] <= list2[j][1]) & ((list1[i][1] + l1) >= (list2[j][1] + l2)):
-                        #isn2 = True
-                    #elif (list1[i][1] >= list2[j][1]) & ((list1[i][1] + l1) <= (list2[j][1] + l2)):
-                        #isn1 = True
-                    #else: 
-                        #return False, n2
-                
-        #if len(set(seqlist1)) != len(set(seqlist2)):
-            #return False, n2
-        #if isn2: 
-            #return True, n2
-        #if isn1: 
-            #return True, n1
-        #return False, n2
+        return resultArray
 
 def generalised_test():
 
