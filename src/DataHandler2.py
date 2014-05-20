@@ -86,6 +86,29 @@ def getTopHost(conn, topId):
         topHost=row[0]
     return getHost(topHost)
 
+def isValidReq(conn, pageId):
+    c=conn.cursor()
+
+    for row in c.execute('SELECT location, parent_id FROM pages WHERE id="%d"' % pageId):
+        location = row[0]
+        parentId = row[1]
+
+        if pageId == -1 or parentId == -1:    # no parent
+            #print 'get rid of -1'
+            return False
+
+        if location == 'about:blank':
+            #print 'get rid of blank page'
+            return False
+
+        topParentId = getTopPage(conn, parentId)
+        if topParentId == 0:
+            return False
+
+        return True
+
+
+
 def checkThirdPartyReq(conn, pageId):
     c=conn.cursor()
 
@@ -127,6 +150,8 @@ def tokenDictFromFile(sqliteFile):
 
     for row in c.execute('SELECT id, url, referrer, page_id FROM http_requests'):
         page_id = row[3]
+        if isValidReq(conn, page_id)==True:
+            num+=1
         if checkThirdPartyReq(conn, page_id) != True:
             continue
         req_id = row[0]
@@ -140,10 +165,6 @@ def tokenDictFromFile(sqliteFile):
         addTokensFromURL(req_id, referrer_host, host, url, tokenDict)
         #print req_id
         addTokensFromHeader(conn, req_id, referrer_host, host, tokenDict)
-
-
-    
-            #print('Not a third party request')
             
     conn.close()
     #print "third party pages number",
