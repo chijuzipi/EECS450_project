@@ -37,7 +37,6 @@ class RequestTokenDict:
         tokenNum = 0
         for host in self.tokenDict.keys():
             hostNum += 1
-            #print host
             for token in self.tokenDict[host]:
                 tokenNum += 1
                 if host == "http://ad.doubleclick.net":
