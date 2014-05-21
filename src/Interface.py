@@ -24,12 +24,35 @@ class RequestToken:
 class RequestTokenDict:
     def __init__(self):
         self.tokenDict = dict()
+        self.idDict = dict()
 
     def addToDict(self,token):
         if token.host in self.tokenDict.keys():
             self.tokenDict[token.host].append(token)
         else:
             self.tokenDict[token.host] = [token]
+
+    def findIdentifier(self):
+        for host in self.tokenDict.keys():
+            valueDict = []
+            identifier = dict()
+            for token in self.tokenDict[host]:
+                if token.value in valueDict:
+                    if token.value in identifier.keys():
+                        identifier[token.value]+=1
+                    else:
+                        identifier[token.value]=2
+                else:
+                    valueDict.append(token.value)
+            if identifier:
+                for v in identifier.keys():
+                    if identifier[v]<100 or ".js" in v:
+                        del identifier[v]
+                if identifier:
+                    self.idDict[host]=identifier
+                    print identifier
+
+
 
     def printDict(self):
         textFile = open ("output","w")
