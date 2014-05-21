@@ -142,7 +142,7 @@ class GeneralisedSuffixTree(SuffixTree):
         self.startPositions += [self.startPositions[-1] + 1] # empty string
         self.sequences += ['']
         #print concatString
-        print sequences
+        #print sequences
         # The whole concatString will also concated with a terminator "terminator"
 
         SuffixTree.__init__(self, concatString, unichr(terminator))
@@ -198,27 +198,24 @@ class GeneralisedSuffixTree(SuffixTree):
     
                 occurance = len(set(requestIdList)) / float(numRequest)
                 if (len(s) >= minLength) and (occurance >= minOccurance):
-                    #print "Occurance is " + str(occurance) + " for " + n.pathLabel
-                    nArray.append(n)     
-                    #yield [(seq, idx, idx + len(s)) for (seq, idx) in n.pathIndices]
+                    nArray.append((n, occurance))     
 
-        for n in self.filterSubSubstrings(nArray):
+        for n, occurance in self.filterSubSubstrings(nArray):
             l = len(n.pathLabel)
-            print "\n" + "-" * 70
-            yield [(seq, idx, idx + l) for (seq, idx) in n.pathIndices]
+            yield [(seq, idx, idx + l, occurance) for (seq, idx) in n.pathIndices]
             
     def filterSubSubstrings(self, nArray):
         resultArray = []
         toAppend = True
-        for n in nArray:
-            for refNode in nArray:
+        for n, occurance in nArray:
+            for refNode, refOccurance in nArray:
                 if (n.pathLabel != refNode.pathLabel and
                     n.pathLabel in refNode.pathLabel):
                     toAppend = False
                     break
 
             if toAppend:
-                resultArray.append(n)
+                resultArray.append((n, occurance))
 
             toAppend = True
 

@@ -11,7 +11,7 @@ import copy
 #    2). the key is param for the whole parameters
 #For request's path, the key is param_path 
 class RequestToken:
-    def __init__(self,req_id,name,value,host,referer_host):
+    def __init__(self, req_id, name, value, host, referer_host):
         self.id = req_id
         self.name = name
         self.value = value
@@ -55,11 +55,12 @@ class RequestTokenDict:
             tokenList = self.tokenDict[host]
     
             if host not in stringArrayDict.keys():
-                stringArrayDict[host] = ([], [])
+                stringArrayDict[host] = ([], [], [])
     
             for token in tokenList:
-                stringArrayDict[host][0].append(token.value)
-                stringArrayDict[host][1].append(token.id)
+                stringArrayDict[host][0].append(token.name)
+                stringArrayDict[host][1].append(token.value)
+                stringArrayDict[host][2].append(token.id)
     
         return stringArrayDict
 
@@ -68,9 +69,20 @@ class RequestTokenDict:
 #type == 2: find LCS from tokens, uniqueness is no use here
 
 class Identifier:
-    def __init__(self, token_set, name, value, type, uniqueness, prevalance):
-        pass
+    def __init__(self, value, table, occurance):
+        self.value = value
+        self.table = table
+        self.occurance = occurance
 
-class IdentifierSet:
-    def __init__(self,host):
-        pass
+    def __repr__(self):
+        return self.value + "----" + str(self.occurance)
+
+class IdentifierDict:
+    def __init__(self):
+        self.identifierDict = dict()
+
+    def addToDict(self, host, identifier):
+        if host in self.identifierDict.keys():
+            self.identifierDict[host].append(identifier)
+        else:
+            self.identifierDict[host] = [identifier]
