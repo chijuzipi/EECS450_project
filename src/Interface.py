@@ -53,7 +53,6 @@ class RequestTokenDict:
                     print identifier
 
 
-
     def printDict(self):
         textFile = open ("output","w")
         hostNum = 0
