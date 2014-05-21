@@ -110,7 +110,6 @@ def isValidReq(conn, pageId):
         return True
 
 
-
 def checkThirdPartyReq(conn, pageId, url):
     c=conn.cursor()
     host = getHost(url)
@@ -176,4 +175,5 @@ def tokenDictFromFile(sqliteFile):
     return tokenDict
 
 if __name__ == "__main__":
-    tokenDictFromFile(sys.argv[1])
+    tokenDict = tokenDictFromFile(sys.argv[1])
+    tokenDict.findIdentifier()
