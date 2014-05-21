@@ -74,10 +74,12 @@ def addTokensFromHeader(conn, req_id, referrer_host, host, tokenDict):
             for pair in pairs:
                 if pair.find('=') == -1:
                     print "error!! No = in cookies"
-                name = "cookie_" + pair.split('=',1)[0]
-                value = pair.split('=',1)[1]
-                token = Interface.RequestToken(req_id, name, value, host, referrer_host)
-                tokenDict.addToDict(token)
+                    print pair
+                else:
+                    name = "cookie_" + pair.split('=',1)[0]
+                    value = pair.split('=',1)[1]
+                    token = Interface.RequestToken(req_id, name, value, host, referrer_host)
+                    tokenDict.addToDict(token)
 
 
 def getTopHost(conn, topId):
@@ -109,9 +111,9 @@ def isValidReq(conn, pageId):
 
 
 
-def checkThirdPartyReq(conn, pageId):
+def checkThirdPartyReq(conn, pageId, url):
     c=conn.cursor()
-
+    host = getHost(url)
     for row in c.execute('SELECT location, parent_id FROM pages WHERE id="%d"' % pageId):
         location = row[0]
         parentId = row[1]
@@ -129,7 +131,6 @@ def checkThirdPartyReq(conn, pageId):
             return False
 
         topHost = getTopHost(conn,topParentId)
-        host = getHost(location)
 
         if host != topHost: # Third-party requests
             return True
@@ -149,13 +150,13 @@ def tokenDictFromFile(sqliteFile):
     num = 0
 
     for row in c.execute('SELECT id, url, referrer, page_id FROM http_requests'):
+        url = row[1]
         page_id = row[3]
         if isValidReq(conn, page_id)==True:
             num+=1
-        if checkThirdPartyReq(conn, page_id) != True:
+        if checkThirdPartyReq(conn, page_id, url) != True:
             continue
         req_id = row[0]
-        url = row[1]
         if url == 'error':
             print pageId
         referrer_host = getHost(row[2])
