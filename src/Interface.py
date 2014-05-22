@@ -19,11 +19,16 @@ class RequestToken:
         self.referrer_host = referer_host
 
     def __repr__(self):
-        return str(self.id) + "----" + self.name + "-----" + self.value
+        return self.name + "---" + self.value
+    def __eq__(self, other):
+        return self.name == other.name and self.value == other.value and self.host==other.host
+    def __hash__(self):
+        return hash(self.name) ^ hash(self.value) ^ hash(self.host)
 
 class RequestTokenDict:
     def __init__(self):
         self.tokenDict = dict()
+        self.reqNum = dict()
         self.idDict = dict()
 
     def addToDict(self,token):
@@ -34,24 +39,37 @@ class RequestTokenDict:
 
     def findIdentifier(self):
         for host in self.tokenDict.keys():
+            '''
+            if "doubleclick" not in host:
+                continue
+            #print host
+            #print self.tokenDict[host]
+            '''
+            if self.reqNum[host]<100:
+                continue
             valueDict = []
             identifier = dict()
             for token in self.tokenDict[host]:
                 if token.value in valueDict:
-                    if token.value in identifier.keys():
-                        identifier[token.value]+=1
+                    if token in identifier[token.value].keys():
+                        identifier[token.value][token]+=1
                     else:
-                        identifier[token.value]=2
+                        identifier[token.value][token]=1
                 else:
                     valueDict.append(token.value)
+                    tokenNumDict=dict()
+                    tokenNumDict[token]=1
+                    identifier[token.value]=tokenNumDict
             if identifier:
                 for v in identifier.keys():
-                    if identifier[v]<100 or ".js" in v:
+                    num = 0
+                    for t in identifier[v].keys():
+                        num+=identifier[v][t]
+                    if num < self.reqNum[host]:
                         del identifier[v]
                 if identifier:
                     self.idDict[host]=identifier
-                    print identifier
-
+                    #print host + str(self.reqNum[host])
 
     def printDict(self):
         textFile = open ("output","w")
