@@ -138,7 +138,6 @@ def checkThirdPartyReq(conn, pageId, url):
         else:
             return False
 
-
 def tokenDictFromFile(sqliteFile):
     conn = sqlite3.connect(sqliteFile)
 
@@ -160,6 +159,10 @@ def tokenDictFromFile(sqliteFile):
             print pageId
         referrer_host = getHost(row[2])
         host = getHost(row[1])
+        if host in tokenDict.reqNum.keys():
+            tokenDict.reqNum[host]+=1
+        else:
+            tokenDict.reqNum[host]=1
         reqNum+=1
         #print referrer_host
         addTokensFromURL(req_id, referrer_host, host, url, tokenDict)
@@ -170,10 +173,37 @@ def tokenDictFromFile(sqliteFile):
     #print "third party pages number",
     print num
     print reqNum
+    #print tokenDict.reqNum
     tokenDict.printDict()
 
     return tokenDict
 
 if __name__ == "__main__":
-    tokenDict = tokenDictFromFile(sys.argv[1])
-    tokenDict.findIdentifier()
+    finalID = dict()
+    tokenDict1 = tokenDictFromFile(sys.argv[1])
+    tokenDict1.findIdentifier()
+
+    tokenDict2 = tokenDictFromFile(sys.argv[2])
+    tokenDict2.findIdentifier()
+
+    for host in tokenDict1.idDict.keys():
+        finalID[host]=[]
+        if host not in tokenDict2.idDict.keys():
+            continue
+        id1=tokenDict1.idDict[host]
+        id2=tokenDict2.idDict[host]
+        for value1 in id1.keys():
+            for value2 in id2.keys():
+                if value1==value2:
+                    continue
+                for token1 in id1[value1].keys():
+                    for token2 in id2[value2].keys():
+                        if token1.name == token2.name:
+                            finalID[host].append(str(token1)+"~~"+str(id1[value1][token1]))
+    for host in finalID.keys():
+        if not finalID[host]:
+            del finalID[host]
+    for host in finalID.keys():
+        print host
+        print finalID[host]
+
