@@ -6,7 +6,7 @@ import SuffixTree
 import sys
 
 def usage():
-    print("Usage: [python_2.x_bin] FindIdentifier.py [.sqlite file]")
+    print("Usage: [python_2.x_bin] FindIdentifier.py [.sqlite file1] [.sqlite file2] [level]")
 
 def printCommonString(sequences, seq, start, stop, occurance):
     print seq, '[' + str(start) + ':' + str(stop) + ']',
@@ -51,9 +51,45 @@ def identifierDictFromFile(database):
 
     return identifiers
 
+def identifierFilration(iden1, iden2, level)
+    result = Interface.IdentifierDict()
+    commonKey = iden1.Keys.Intersect(iden2.Keys)
+    for host in commonKey:
+        list1 = iden1[host]
+        list2 = iden2[host]
+        for i in range(len(list1)):
+            for j in range(len(list2)):
+                #if tables are similar
+                if similar(list1[i][1], list2[j][1], level):
+                    #if the identifier strings are different 
+                    if list1[i][0] != list2[j][0]:
+                        result.addToDict(host, list1[i][0])
+    print result
+    return result
+    
+def similar(table1, table2, level):
+    if level == 1:
+        if table1 == table2:
+            return True
+        elif:
+            return False
+    if level == 2:
+        if table1[3] == table2[3]:
+            return True
+        elif:
+            return False
+
 if __name__ == "__main__":
 
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 4:
         usage()
     else:
-        identifierDictFromFile(sys.argv[1])
+        iden1 = identifierDictFromFile(sys.argv[1])
+        iden2 = identifierDictFromFile(sys.argv[2])
+        level = int(sys.argv[3])
+        if (level != 1) or (level != 2) :
+            print 'only level 1 and 2 are implemented'
+            return
+        print 'start filration...'
+        print '*'*70
+        identifierFilration(iden1, iden2, level) 
