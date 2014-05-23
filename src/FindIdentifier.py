@@ -26,11 +26,18 @@ def identifierDictFromFile(database):
 
     numHosts = len(stringArrayDict.keys())
     counterHost = 1
-    for host in stringArrayDict.keys():
-    #for host in ['google.com']:
+    #for host in stringArrayDict.keys():
+    for host in ['google.com', 'alibaba.com', 'ameba.jp', 'sstatic.net', 'scorecardresearch.com', 'xvideos.com',
+    'twitter.com','doubleclick.net']:
       #  print("Host " + str(counterHost) + " / " + str(numHosts) + ": " + host)
         keys, sequences, reqId = stringArrayDict[host]
+    
+        print 'how many strings:', len(sequences)  
+        
         terminator = SuffixTree.getUnicodeTerminator(sequences)
+        print 'terminator is determined'
+        print 'start buidling the tree....'
+        print '@' *70
         st = SuffixTree.GeneralisedSuffixTree(sequences, terminator)
 
         for shared in st.sharedSubstrings(reqId, 5, 0.5):
