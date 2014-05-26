@@ -199,6 +199,8 @@ class GeneralisedSuffixTree(SuffixTree):
                 occurance = len(set(requestIdList)) / float(numRequest)
                 if (len(s) >= minLength) and (occurance >= minOccurance):
                     nArray.append((n, occurance))     
+                    #l = len(n.pathLabel)
+                    #yield [(seq, idx, idx + l, occurance) for (seq, idx) in n.pathIndices]
 
         for n, occurance in self.filterSubSubstrings(nArray):
             l = len(n.pathLabel)

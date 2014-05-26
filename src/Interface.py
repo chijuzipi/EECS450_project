@@ -88,7 +88,7 @@ class RequestTokenDict:
         textFile.close()
 
     # The StringArrayDict has a tuple of lists for each host
-    #     stringArrayDict[host] = ([values], [request Ids])
+    #     stringArrayDict[host] = ([keys], [values], [request Ids])
     def toStringArrayDict(self):
         stringArrayDict = {}
         for host in self.tokenDict.keys():
