@@ -45,7 +45,7 @@ class RequestTokenDict:
             #print host
             #print self.tokenDict[host]
             '''
-            if self.reqNum[host]<100:
+            if self.reqNum[host]<10:
                 continue
             valueDict = []
             identifier = dict()
