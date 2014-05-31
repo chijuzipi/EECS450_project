@@ -4,6 +4,9 @@ import DataHandler
 import Interface
 import SuffixTree
 import sys
+import gc
+
+#gc.set_debug(gc.DEBUG_STATS | gc.DEBUG_LEAK)
 
 def usage():
     print("Usage: [python_2.x_bin] FindIdentifier.py [.sqlite file1] [.sqlite file2] [level]")
@@ -26,29 +29,32 @@ def identifierDictFromFile(database):
 
     numHosts = len(stringArrayDict.keys())
     counterHost = 1
-    #for host in stringArrayDict.keys():
-    for host in ['google.com']:
+    for host in stringArrayDict.keys():
+    #for host in ['twitter.com']:
         print("Host " + str(counterHost) + " / " + str(numHosts) + ": " + host)
         keys, sequences, reqId = stringArrayDict[host]
         terminator = SuffixTree.getUnicodeTerminator(sequences)
         st = SuffixTree.GeneralisedSuffixTree(sequences, terminator)
-
+    
         for shared in st.sharedSubstrings(reqId, 5, 0.5):
+            pass
             print('-' * 70)
             stringTable = []
             for seq, start, stop, occurance in shared:
                 stringTable.append([sequences[seq], start, stop, keys[seq], reqId[seq]])
                 #printCommonString(sequences, seq, start, stop)
-
+    
             newIdentifier = Interface.Identifier(sequences[seq][start:stop], stringTable, occurance)
             print(newIdentifier)
             identifiers.addToDict(host, newIdentifier)
-
+    
         print('=' * 70)
     
         counterHost += 1
-        del st
         print('Done.\n\n')
+    
+        del st
+        gc.collect()
 
     return identifiers
 
@@ -92,23 +98,25 @@ def similar(table1, table2, level):
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 4:
+    #if len(sys.argv) != 4:
+    if len(sys.argv) != 2:
         usage()
     else:
-        iden1 = identifierDictFromFile(sys.argv[1])
-        iden2 = identifierDictFromFile(sys.argv[2])
-        dict1 = iden1.identifierDict
-        dict2 = iden2.identifierDict
-        table1 = iden1.table
-        print '%'*70
-        print dict1
-        print dict2
-        print '%'*70
-        #how to get the table?
-        level = int(sys.argv[3])
-        if (level != 1) and (level != 2) :
-            print 'only level 1 and 2 are implemented'
-        else:
-            print 'start filration...'
-            print '*'*70
-            identifierFilration(dict1, dict2, level) 
+        identifierDictFromFile(sys.argv[1])
+        #iden1 = identifierDictFromFile(sys.argv[1])
+        #iden2 = identifierDictFromFile(sys.argv[2])
+        #dict1 = iden1.identifierDict
+        #dict2 = iden2.identifierDict
+        #table1 = iden1.table
+        #print '%'*70
+        #print dict1
+        #print dict2
+        #print '%'*70
+        ##how to get the table?
+        #level = int(sys.argv[3])
+        #if (level != 1) and (level != 2) :
+            #print 'only level 1 and 2 are implemented'
+        #else:
+            #print 'start filration...'
+            #print '*'*70
+            #identifierFilration(dict1, dict2, level) 

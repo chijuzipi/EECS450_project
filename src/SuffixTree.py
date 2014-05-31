@@ -1,7 +1,10 @@
 import sys
 reload(sys)
 import _suffix_tree
+import gc
+
 sys.setdefaultencoding("utf-8")
+gc.set_debug(gc.DEBUG_UNCOLLECTABLE | gc.DEBUG_STATS | gc.DEBUG_LEAK)
 
 def postOrderNodes(node):
     '''Iterator through all nodes in the sub-tree rooted in node in
@@ -139,27 +142,26 @@ class GeneralisedSuffixTree(SuffixTree):
             concatString += sequences[i] + unichr(terminator + i + 1)
             self.startPositions += [len(concatString)]
 
-        self.startPositions += [self.startPositions[-1] + 1] # empty string
-        self.sequences += ['']
-        #print concatString
-        #print sequences
+        # An empty string is attached for the whole terminator
         # The whole concatString will also concated with a terminator "terminator"
+        self.startPositions += [self.startPositions[-1] + 1]
+        self.sequences += [u'']
 
         SuffixTree.__init__(self, concatString, unichr(terminator))
         self._annotateNodes()
 
 
-    def _translateIndex(self,idx):
-        'Translate a concat-string index into a (stringNo,idx) pair.'
+    def _translateIndex(self, idx):
+        'Translate a concat-string index into a (stringNo, idx) pair.'
         for i in xrange(len(self.startPositions) - 1):
             if self.startPositions[i] <= idx < self.startPositions[i + 1]:
-                return (i,idx-self.startPositions[i])
+                return (i, idx - self.startPositions[i])
         raise IndexError, "Index out of range: "+ str(idx)
 
     def _annotateNodes(self):
         for n in self.postOrderNodes:
             if n.isLeaf:
-                seq,idx = self._translateIndex(n.index)
+                seq, idx = self._translateIndex(n.index)
                 n.pathIndices = [(seq, idx)]
                 n.sequences = [seq]
             else:
@@ -189,7 +191,8 @@ class GeneralisedSuffixTree(SuffixTree):
         # Every inner node will represent a shared
         # substring if its sequences more than 1  
         for n in self.innerNodes:
-            if len(n.sequences) <= len(self.sequences) - 1:
+            if (len(n.sequences) <= len(self.sequences) - 1 and
+                len(n.sequences) > 1):
                 # s is the shared string
                 s = n.pathLabel
                 requestIdList = []
@@ -209,6 +212,7 @@ class GeneralisedSuffixTree(SuffixTree):
     def filterSubSubstrings(self, nArray):
         resultArray = []
         toAppend = True
+        l = len(nArray)
         for n, occurance in nArray:
             for refNode, refOccurance in nArray:
                 if (n.pathLabel != refNode.pathLabel and
@@ -223,18 +227,53 @@ class GeneralisedSuffixTree(SuffixTree):
 
         return resultArray
 
+def simple_test():
+    print 'SIMPLE TEST'
+    st = SuffixTree(u'mississippi', unichr(1000))
+    assert st.string == u'mississippi' + unichr(1000)
+
+    #st = SuffixTree(u'mississippi', u'#')
+    #assert st.string == u'mississippi#'
+
+    r = st.root
+    assert st.root == r
+    assert st.root.parent is None
+    assert st.root.firstChild.parent is not None
+    assert st.root.firstChild.parent == st.root
+
+    for n in st.postOrderNodes:
+        assert st.string[n.start:n.end+1] == n.edgeLabel
+
+    # collect path labels
+    for n in st.preOrderNodes:
+        p = n.parent
+        if p is None: # the root
+            n._pathLabel = ''
+        else:
+            n._pathLabel = p._pathLabel + n.edgeLabel
+
+    for n in st.postOrderNodes:
+        assert n.pathLabel == n._pathLabel
+
+    for l in st.leaves:
+        print 'leaf:', '"'+l.pathLabel+'"', ':', '"'+l.edgeLabel+'"'
+
+    for n in st.innerNodes:
+        print 'inner:', '"'+n.edgeLabel+'"'
+
+    print 'done.\n\n'
+
+    del st
+
 def generalised_test():
 
     print 'GENERALISED TEST'
     sequences = ['aaaaa111cccc', 'aaaaa111cccc', 'aaaa333cccc']
-    #terminatorArray = getTerminatorArray(sequences)
-    #print 'length of the terminatorArray',len(terminatorArray)
-    #st = GeneralisedSuffixTree(sequences, terminatorArray)
     terminator = getUnicodeTerminator(sequences)
     st = GeneralisedSuffixTree(sequences, terminator)
     for shared in st.sharedSubstrings([1, 1, 1], 2, 0):
         print '-'*70
-        for seq,start,stop in shared:
+        for seq,start,stop,occurance in shared:
             print seq, '['+ str(start) + ':' + str(stop) + ']',
             print sequences[seq][start:stop],
             print sequences[seq][:start]+'|'+sequences[seq][start:stop]+\
@@ -242,11 +281,13 @@ def generalised_test():
     print '='*70
 
     print 'done.\n\n'
-
+    
+    del st
 
 def test():
+    simple_test()
     generalised_test()
-
+    gc.collect()
 
 if __name__ == '__main__':
     test()

@@ -243,8 +243,9 @@ st_make(const UChar *s, const UChar *term)
 
     int32_t string_length = u_strlen(s) + 2; // for `term' and \0
     UChar *t = malloc(sizeof(UChar) * string_length);
-    u_strcpy(t,s);
-    /*t[string_length - 2] = term;*/
+
+    /* Concatenate the terminator to the original string*/
+    u_strcpy(t, s);
     u_strncat(t, term, 1);
 
     return make_helper(t, string_length - 1);
