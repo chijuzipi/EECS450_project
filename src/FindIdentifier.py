@@ -29,23 +29,29 @@ def identifierDictFromFile(database):
 
     numHosts = len(stringArrayDict.keys())
     counterHost = 1
-    for host in stringArrayDict.keys():
-    #for host in ['twitter.com']:
-        print("Host " + str(counterHost) + " / " + str(numHosts) + ": " + host)
+    #for host in stringArrayDict.keys():
+    for host in ['google.com', 'alibaba.com', 'ameba.jp', 'sstatic.net', 'scorecardresearch.com', 'xvideos.com',
+    'twitter.com','doubleclick.net']:
+      #  print("Host " + str(counterHost) + " / " + str(numHosts) + ": " + host)
         keys, sequences, reqId = stringArrayDict[host]
+    
+        print 'how many strings:', len(sequences)  
+        
         terminator = SuffixTree.getUnicodeTerminator(sequences)
+        print 'terminator is determined'
+        print 'start buidling the tree....'
+        print '@' *70
         st = SuffixTree.GeneralisedSuffixTree(sequences, terminator)
     
         for shared in st.sharedSubstrings(reqId, 5, 0.5):
-            pass
-            print('-' * 70)
+       #     print('-' * 70)
             stringTable = []
             for seq, start, stop, occurance in shared:
                 stringTable.append([sequences[seq], start, stop, keys[seq], reqId[seq]])
                 #printCommonString(sequences, seq, start, stop)
     
             newIdentifier = Interface.Identifier(sequences[seq][start:stop], stringTable, occurance)
-            print(newIdentifier)
+    #        print(newIdentifier)
             identifiers.addToDict(host, newIdentifier)
     
         print('=' * 70)
@@ -56,67 +62,102 @@ def identifierDictFromFile(database):
         del st
         gc.collect()
 
+        print('Done with process identifiers object\n\n')
+
     return identifiers
 
 def identifierFilration(iden1, iden2, level):
-    result = Interface.IdentifierDict()
+    result = []
     commonKey = getCommonKeys(iden1, iden2) 
     for host in commonKey:
+        #this is identifier list
         list1 = iden1[host]
         list2 = iden2[host]
-        print 'list 1 is :', list1
-        print 'list 2 is :', list2
+        commonValue1 = []
+        commonValue2 = []
+        
+        # eliminate the duplicates:
+        for i in range(len(list1)):
+            for j in range(len(list2)):
+                if list1[i].value == list2[j].value:
+                    commonValue1.append(list1[i]) 
+                    commonValue2.append(list2[j]) 
+        set(commonValue1)
+        set(commonValue2)
+        for item in commonValue1:
+            list1.remove(item)
+        for item in commonValue2:
+            list2.remove(item)
+        # start to compare
         for i in range(len(list1)):
             for j in range(len(list2)):
                 #if tables are similar
-                if similar(list1[i][1], list2[j][1], level):
+                if similarTable(list1[i].table, list2[j].table, level):
                     #if the identifier strings are different 
-                    if list1[i][0] != list2[j][0]:
-                       result.addToDict(host, list1[i][0])
+                    if list1[i].value != list2[j].value:
+                        result.append([host, list1[i].value, list2[j].value])
     print 'the final results: ', result
     return result
 
 def getCommonKeys(dict1, dict2):
     keys = []
-    for key in dict1:
-        getKey = dict2.get(key, None)
-        if getKey:
+    for key in dict1.keys():
+        if key in dict2.keys():
             keys.append(key)
     return keys
 
-def similar(table1, table2, level):
+def similarTable(table1, table2, level):
+    len1 = len(table1)
+    len2 = len(table2)
+    position1 = []
+    key1 = []
+    position2 = []
+    key2 = []
+    for i in range(len1):
+        position1.append(table1[i][1])
+        key1.append(table1[i][3])
+    for i in range(len2):
+        position2.append(table2[i][1])
+        key2.append(table2[i][3])
+        
     if level == 1:
-        if table1 == table2:
-            return True
+        #if the identifiers happens to be from same key
+        for item in key1:
+            if item in key2:
+                return True
         else:
             return False
     if level == 2:
-        if table1[3] == table2[3]:
-            return True
+        #if the identifier happes to be from same key and same start position
+        for item in key1:
+            if item in key2:
+                index1 = key1.index(item)
+                index2 = key2.index(item)
+                if position1[index1] == position2[index2]:
+                    return True
         else:
             return False
 
 if __name__ == "__main__":
 
     #if len(sys.argv) != 4:
-    if len(sys.argv) != 2:
         usage()
     else:
-        identifierDictFromFile(sys.argv[1])
-        #iden1 = identifierDictFromFile(sys.argv[1])
-        #iden2 = identifierDictFromFile(sys.argv[2])
-        #dict1 = iden1.identifierDict
-        #dict2 = iden2.identifierDict
-        #table1 = iden1.table
-        #print '%'*70
-        #print dict1
-        #print dict2
-        #print '%'*70
-        ##how to get the table?
-        #level = int(sys.argv[3])
-        #if (level != 1) and (level != 2) :
-            #print 'only level 1 and 2 are implemented'
-        #else:
-            #print 'start filration...'
-            #print '*'*70
-            #identifierFilration(dict1, dict2, level) 
+        iden1 = identifierDictFromFile(sys.argv[1])
+        iden2 = identifierDictFromFile(sys.argv[2])
+        dict1 = iden1.identifierDict
+        dict2 = iden2.identifierDict
+        print '%'*70
+        print iden1
+        print iden2
+        print dict1
+        print dict2
+        print '%'*70
+
+        level = int(sys.argv[3])
+        if (level != 1) and (level != 2) :
+            print 'only level 1 and 2 are implemented'
+        else:
+            print 'start filration...'
+            print '*'*70
+            identifierFilration(dict1, dict2, level) 
