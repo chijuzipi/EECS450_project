@@ -19,22 +19,33 @@ def printCommonString(sequences, seq, start, stop, occurance):
     print sequences[seq][:start] +unichr(10073) + sequences[seq][start:stop] + \
           unichr(10073) + sequences[seq][stop:]
 
-def identifierDictFromFile(database):
+def identifierDictFromFile(database, time):
     requestTokens = DataHandler.tokenDictFromFile(database)
     stringArrayDict = requestTokens.toStringArrayDict()
 
     identifiers = Interface.IdentifierDict()
+    hostList = []
 
     print('=' * 20 + 'Finding Sub-string Start' + '=' * 20)
-
+    hostMin = time * 100 - 99
+    hostMax = time * 100
     numHosts = len(stringArrayDict.keys())
     counterHost = 1
-    #for host in stringArrayDict.keys():
-    for host in ['google.com', 'alibaba.com', 'ameba.jp', 'sstatic.net', 'scorecardresearch.com', 'xvideos.com',
-    'twitter.com','doubleclick.net']:
+    for host in sorted(stringArrayDict.keys()):
+        counterHost += 1
+        if counterHost < hostMin: 
+            continue
+        if counterHost > hostMax: 
+            return identifiers, hostList
+        if host == 'google.com':
+            continue
+    #for host in ['alibaba.com', 'ameba.jp', 'sstatic.net', 'scorecardresearch.com', 'xvideos.com','twitter.com','doubleclick.net']:
+    #for host in ['alibaba.com']:
       #  print("Host " + str(counterHost) + " / " + str(numHosts) + ": " + host)
+        hostList.append(host)
         keys, sequences, reqId = stringArrayDict[host]
     
+        print 'domain name:', host
         print 'how many strings:', len(sequences)  
         
         terminator = SuffixTree.getUnicodeTerminator(sequences)
@@ -56,17 +67,61 @@ def identifierDictFromFile(database):
     
         print('=' * 70)
     
-        counterHost += 1
-        print('Done.\n\n')
-    
         del st
+        print 'done with host number:', counterHost
+        print('Done with process identifiers object\n\n')
         gc.collect()
 
-        print('Done with process identifiers object\n\n')
+    return identifiers, hostList
 
-    return identifiers
+def identifierDictFromFilewithHost(database, hostList):
+    requestTokens = DataHandler.tokenDictFromFile(database)
+    stringArrayDict = requestTokens.toStringArrayDict()
+
+    identifiers = Interface.IdentifierDict()
+
+    print('=' * 20 + 'Finding Sub-string Start' + '=' * 20)
+
+    numHosts = len(stringArrayDict.keys())
+    counterHost = 1
+    List = []
+    for host in stringArrayDict.keys():
+        if host in hostList:
+            counterHost += 1
+            List.append(host)
+            keys, sequences, reqId = stringArrayDict[host]
+        
+            print 'domain name:', host
+            print 'how many strings:', len(sequences)  
+            
+            terminator = SuffixTree.getUnicodeTerminator(sequences)
+            print 'terminator is determined'
+            print 'start buidling the tree....'
+            print '@' *70
+            st = SuffixTree.GeneralisedSuffixTree(sequences, terminator)
+
+            for shared in st.sharedSubstrings(reqId, 5, 0.5):
+           #     print('-' * 70)
+                stringTable = []
+                for seq, start, stop, occurance in shared:
+                    stringTable.append([sequences[seq], start, stop, keys[seq], reqId[seq]])
+                    #printCommonString(sequences, seq, start, stop)
+
+                newIdentifier = Interface.Identifier(sequences[seq][start:stop], stringTable, occurance)
+        #        print(newIdentifier)
+                identifiers.addToDict(host, newIdentifier)
+
+         #   print('=' * 70)
+        
+            del st
+            print 'done with host number:', counterHost
+            print('Done with process identifiers object\n\n')
+
+    return identifiers, List
 
 def identifierFilration(iden1, iden2, level):
+    print '*'*70
+    print 'start identifier filration....'
     result = []
     commonKey = getCommonKeys(iden1, iden2) 
     for host in commonKey:
@@ -96,8 +151,19 @@ def identifierFilration(iden1, iden2, level):
                     #if the identifier strings are different 
                     if list1[i].value != list2[j].value:
                         result.append([host, list1[i].value, list2[j].value])
-    print 'the final results: ', result
-    return result
+    print '-----------------FINAL RESULT-----------------------'
+    print '-'*70
+    print '-'*70
+    print '-'*70
+    for i in range(len(result)):
+        #f1.write(result[i][0])
+        #f1.write(result[i][1])
+        #f1.write(result[i][2])
+        print(result[i][0])
+        print(result[i][1])
+        print(result[i][2])
+    print '-'*70 
+    print '-'*70 
 
 def getCommonKeys(dict1, dict2):
     keys = []
@@ -140,19 +206,16 @@ def similarTable(table1, table2, level):
 
 if __name__ == "__main__":
 
-    #if len(sys.argv) != 4:
+    if len(sys.argv) != 5:
         usage()
     else:
-        iden1 = identifierDictFromFile(sys.argv[1])
-        iden2 = identifierDictFromFile(sys.argv[2])
+        time  =  int(sys.argv[4])
+        f1 = open('bash_result2.txt', 'a')
+        sys.stdout = f1
+        iden1, hostList1 = identifierDictFromFile(sys.argv[1], time)
+        iden2, hostList2 = identifierDictFromFilewithHost(sys.argv[2], hostList1)
         dict1 = iden1.identifierDict
         dict2 = iden2.identifierDict
-        print '%'*70
-        print iden1
-        print iden2
-        print dict1
-        print dict2
-        print '%'*70
 
         level = int(sys.argv[3])
         if (level != 1) and (level != 2) :
@@ -161,3 +224,10 @@ if __name__ == "__main__":
             print 'start filration...'
             print '*'*70
             identifierFilration(dict1, dict2, level) 
+        f1.close()
+#            for host in hostList1:
+#                if host not in hostList2:
+#                    print 'this host1 not in host2:', host
+#            for host2 in hostList2:
+#                if host2 not in hostList1:
+#                    print 'this host2 not in host 1:', host2
