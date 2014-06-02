@@ -26,10 +26,6 @@ typedef struct NodeObject {
     node_t *node;
 } NodeObject;
 
-static int        SuffixTree_traverse    (SuffixTreeObject *self,
-                                          visitproc         visit,
-                                          void             *arg);
-static int        SuffixTree_clear       (SuffixTreeObject *self);
 static PyObject *SuffixTree_new         (PyTypeObject              *type,
                                          PyObject                  *args,
                                          PyObject                  *kwds);
@@ -44,10 +40,6 @@ static PyObject* wrap_node              (SuffixTreeObject          *tree,
 					 node_t                    *n);
 
 
-static int        Node_traverse          (NodeObject   *self,
-                                          visitproc     visit,
-                                          void         *arg);
-static int        Node_clear             (NodeObject   *self);
 static PyObject *Node_new               (PyTypeObject              *type,
                                          PyObject                  *args,
                                          PyObject                  *kwds);
@@ -97,13 +89,11 @@ static PyTypeObject SuffixTreeType = {
     PyObject_HEAD_INIT(NULL)
     .tp_name      = "_suffix_tree.SuffixTree",
     .tp_basicsize = sizeof(SuffixTreeObject),
-    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
+    .tp_flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_doc       = "Suffix tree object",
     .tp_getset    = SuffixTree_getseters,
     .tp_init      = (initproc)SuffixTree_init,
     .tp_new       = SuffixTree_new,
-    .tp_traverse  = (traverseproc) SuffixTree_traverse,
-    .tp_clear     = (inquiry) SuffixTree_clear,
 };
 
 
@@ -175,17 +165,14 @@ static PyTypeObject NodeType = {
     PyObject_HEAD_INIT(NULL)
     .tp_name       = "_suffix_tree.SuffixTreeNode",
     .tp_basicsize  = sizeof(NodeObject),
-    .tp_flags      = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
-    /*.tp_flags      = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,*/
+    .tp_flags      = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_doc        = "Suffix tree node object",
-    /*.tp_dealloc    = (destructor)Node_dealloc,*/
+    .tp_dealloc    = (destructor)Node_dealloc,
     .tp_compare    = (cmpfunc)Node_compare,
     .tp_hash       = (hashfunc)Node_hash,
     .tp_getset     = Node_getseters,
     .tp_dictoffset = offsetof(NodeObject,dict),
     .tp_new        = Node_new,
-    .tp_traverse   = (traverseproc) Node_traverse,
-    .tp_clear      = (inquiry) Node_clear,
 };
 
 
@@ -222,20 +209,6 @@ init_suffix_tree(void)
 /* tree bindings */
 /**********************************************************************/
 
-static int
-SuffixTree_traverse(SuffixTreeObject *self, visitproc visit, void *arg)
-{
-    Py_VISIT(self->tree->root->python_node);
-    return 0;
-}
-
-static int
-SuffixTree_clear(SuffixTreeObject *self)
-{
-    Py_CLEAR(self->tree->root->python_node);
-    /*Py_CLEAR(self->tree);*/
-    return 0;
-}
 
 static PyObject *
 SuffixTree_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -257,6 +230,8 @@ SuffixTree_init(SuffixTreeObject *self, PyObject *args, PyObject *kwds)
         return -1; 		/* rethrow exception */
 
     char *s; char *t; int n;
+    UChar *ss;
+    UChar *tt;
     if (!(string = PyTuple_GetItem(args,0)))      return -1; /* rethrow */
     if (!(terminal = PyTuple_GetItem(args,1)))    return -1; /* rethrow */
     /* n is actually ignored here -- the size of string s is strlen(s) */
@@ -265,16 +240,14 @@ SuffixTree_init(SuffixTreeObject *self, PyObject *args, PyObject *kwds)
 
     /* Convert the input UTF8 string from python to 
      * UTF16 string in ICU*/
-    UChar *ss;
-    UChar *tt;
     ss = (UChar *)malloc(sizeof(UChar) * (strlen(s) + 1));
     tt = (UChar *)malloc(sizeof(UChar) * 2);
+    
     UErrorCode err = U_ZERO_ERROR;
     u_strFromUTF8(ss, strlen(s) + 1, NULL, s, -1, &err);
     u_strFromUTF8(tt, strlen(t) + 1, NULL, t, -1, &err);
     printf("The string length is %d\n", u_strlen(ss));
 
-    /* Check if the unicode terminator length is 1 */
     if (u_strlen(tt) != 1) // not a single terminal symbol
     {
         PyErr_SetString(PyExc_RuntimeError,
@@ -284,8 +257,8 @@ SuffixTree_init(SuffixTreeObject *self, PyObject *args, PyObject *kwds)
 
     self->tree = st_make(ss, tt);
     if (!self->tree) {
-	    PyErr_SetString(PyErr_NoMemory(),"Could not allocated suffix tree!");
-	    return -1;
+	PyErr_SetString(PyErr_NoMemory(),"Could not allocated suffix tree!");
+	return -1;
     }
 
     free(ss);
@@ -319,22 +292,19 @@ wrap_node(SuffixTreeObject *tree, node_t *n)
 	    return (PyObject*)n->python_node;
 	}
 
-    /*NodeObject *node = (NodeObject*)_PyObject_New((PyTypeObject*)&NodeType);*/
-    NodeObject *node = (NodeObject*)PyObject_GC_New(NodeObject, &NodeType);
+    NodeObject *node = (NodeObject*)_PyObject_New((PyTypeObject*)&NodeType);
     if (!node) return 0;
 
     node->dict = PyDict_New();
     node->tree = tree;
     node->node = n;
 
-    Py_INCREF(tree); //FIXME: handle cyclic GC and make
+    //Py_INCREF((PyObject*)tree); //FIXME: handle cyclic GC and make
     //sure tree isn't deleted while we have a node
 
     // make sure the node is never deleted while the tree is in existence
     Py_INCREF(node);
     n->python_node = node;
-
-    PyObject_GC_Track(node);
 
     return (PyObject*)node;
 }
@@ -352,25 +322,6 @@ SuffixTree_root(SuffixTreeObject *self)
 /* node bindings */
 /**********************************************************************/
 
-static int
-Node_traverse(NodeObject * self, visitproc visit, void * arg)
-{
-    Py_VISIT(self->dict);
-    Py_VISIT(self->node->python_node);
-    Py_VISIT(self->tree);
-    return 0;
-}
-
-static int
-Node_clear(NodeObject *self)
-{
-    Py_CLEAR(self->dict);
-    Py_CLEAR(self->node->python_node);
-    /*Py_CLEAR(self->node);*/
-    Py_CLEAR(self->tree);
-    return 0;
-}
-
 static PyObject *
 Node_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
@@ -381,20 +332,21 @@ Node_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     return (PyObject*)self;
 }
 
-/*static int*/
-/*Node_clear(NodeObject *self)*/
-/*{*/
-    /*Py_XDECREF(self->dict); self->dict = NULL;*/
-    /*Py_XDECREF(self->tree); self->tree = NULL;*/
-    /*return 0;*/
-/*}*/
+static int
+Node_clear(NodeObject *self)
+{
+    Py_XDECREF(self->dict); self->dict = NULL;
+    Py_XDECREF(self->tree); self->tree = NULL;
+    return 0;
+}
 
-/*static void*/
-/*Node_dealloc(NodeObject *self)*/
-/*{*/
-    /*Node_clear(self);*/
-    /*self->ob_type->tp_free((PyObject*)self);*/
-/*}*/
+static void
+Node_dealloc(NodeObject *self)
+{
+    printf("Garbage collection!");
+    Node_clear(self);
+    self->ob_type->tp_free((PyObject*)self);
+}
 
 static int
 Node_compare(NodeObject *n1, NodeObject *n2)
@@ -501,6 +453,9 @@ Node_suffix(NodeObject *self)
 
     return uniStr;
 }
+
+
+
 
 static PyObject *
 Node_parent(NodeObject *self)

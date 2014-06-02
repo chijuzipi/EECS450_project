@@ -4,7 +4,7 @@ import _suffix_tree
 import gc
 
 sys.setdefaultencoding("utf-8")
-gc.set_debug(gc.DEBUG_UNCOLLECTABLE | gc.DEBUG_STATS | gc.DEBUG_LEAK)
+#gc.set_debug(gc.DEBUG_UNCOLLECTABLE | gc.DEBUG_STATS | gc.DEBUG_LEAK)
 
 def postOrderNodes(node):
     '''Iterator through all nodes in the sub-tree rooted in node in

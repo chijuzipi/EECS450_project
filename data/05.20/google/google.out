@@ -1,0 +1,26 @@
+Generating the available host list.....
+error!! No = in cookies
+ cookiesavailable
+error!! No = in cookies
+ cookiesavailable
+67579
+43507
+host number 955
+token number 186419
+Finish loading data from httpfox.sqlite
+43074
+26338
+host number 616
+token number 101249
+Finish loading data from httpfox.sqlite2
+The original sequence number for google.com is 17890
+Cleaning the overlap values of the two databases....
+The new sequence number for google.com is 13974
+====================Finding Sub-string Start====================
+Host 1 / 1: google.com
+The number of strings:13974
+The terminator is :  Ϩ
+Terminator is determined
+Start buidling the tree....
+----------------------------------------------------------------------
+The string length is 2227182
