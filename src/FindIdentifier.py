@@ -278,11 +278,16 @@ def writeCfg(resultDict, filename):
 
 if __name__ == "__main__":
 
-    #if len(sys.argv) != 4:
-        #usage()
-    #else:
+    if len(sys.argv) == 1:
+        cfgFile = "identifier.cfg"
+    elif len(sys.argv) == 2:
+        cfgFile = sys.argv[1]
+    else:
+        usage()
+        sys.exit(0)
+
     config = ConfigParser.RawConfigParser()
-    config.read('identifier.cfg')
+    config.read(cfgFile)
     database1 = config.get('databases', 'database1')
     database2 = config.get('databases', 'database2')
     level = config.getint('identifiers', 'level')

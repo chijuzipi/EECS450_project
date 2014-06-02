@@ -6,7 +6,11 @@ Usage
 ```
 python2 FindIdentifier.py
 ```
-A config file is needed to specify the specific databases and related parameters. An example is like this:
+A config file is needed to specify the specific databases and related parameters. By default the config file name is identifier.cfg. You also specify your own config file and run the program using:
+```
+python2 FindIdentifier.py [YourConfigFile]
+```
+An example of the config file is like this:
 ```
 [databases]
 database1 = httpfox.sqlite
