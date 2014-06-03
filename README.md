@@ -3,15 +3,15 @@ Finding and Analyzing the Web User identifiers of Third-Party Trackers
 
 Usage
 -----
-```sh
+```bash
 python2 FindIdentifier.py
 ```
 A config file is needed to specify the specific databases and related parameters. By default the config file name is *identifier.cfg*. You can also specify your own config file and run the program using:
-```sh
-python2 FindIdentifier.py [YourConfigFile]
+```bash
+python2 FindIdentifier.py YourConfigFile.cfg
 ```
 An example of the config file is like this:
-```python
+```ini
 [databases]
 database1 = httpfox.sqlite
 database2 = httpfox.sqlite2
