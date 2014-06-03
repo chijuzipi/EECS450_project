@@ -3,12 +3,13 @@ Finding and Analyzing the Web User identifiers of Third-Party Trackers
 
 Usage
 -----
+Please use Python 2.x to run the program:
 ```bash
-python2 FindIdentifier.py
+$PYTHON2_BIN FindIdentifier.py
 ```
 A config file is needed to specify the specific databases and related parameters. By default the config file name is *identifier.cfg*. You can also specify your own config file and run the program using:
 ```bash
-python2 FindIdentifier.py YourConfigFile.cfg
+$PYTHON2_BIN FindIdentifier.py YourConfigFile.cfg
 ```
 An example of the config file is like this:
 ```ini
