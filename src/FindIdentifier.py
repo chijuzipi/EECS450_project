@@ -100,7 +100,7 @@ def filterOverlapValues(stringArrayDict1, stringArrayDict2, hostList):
 
 
 # FUNCTION: identifierDictFromFile
-#     Extract the identifiers from the stringArrayDict and given host list
+#     Extract the identifiers from the stringArrayDict and given host list with generalized suffix tree algorithms 
 # INPUT: 
 #     stringArrayDict    : Converted from RequestTokenDict object
 #     candidateHostList  : The list of hosts to be processed(Optional)
@@ -155,6 +155,15 @@ def identifierDictFromFile(stringArrayDict, candidateHostList = None,
 
     return identifiers
 
+# FUNCTION: identifierFiltration
+#     Compare two common strings found in two database, to tell if they have similary property table but different
+#     string characters.  
+# INPUT: 
+#     stringArrayDict    : Converted from RequestTokenDict object
+#     candidateHostList  : The list of hosts to be processed(Optional)
+# OUTPUT:
+#     identifierDict     : The dictionay of identifiers for the hosts
+
 def identifierFiltration(iden1, iden2, hostList, level):
     print('*' * 70)
     print('Start identifier filration....')
@@ -188,6 +197,7 @@ def identifierFiltration(iden1, iden2, hostList, level):
             list1.remove(item)
         for item in commonValue2:
             list2.remove(item)
+            
         # Start to compare
         for i in range(len(list1)):
             for j in range(len(list2)):
@@ -195,6 +205,7 @@ def identifierFiltration(iden1, iden2, hostList, level):
                 if similarTable(list1[i].table, list2[j].table, level):
                     # If the identifier strings are different 
                     if list1[i].value != list2[j].value:
+                    
                         if host not in resultDict1.keys():
                             resultDict1[host] = []
 
@@ -204,6 +215,7 @@ def identifierFiltration(iden1, iden2, hostList, level):
                         resultDict1[host].append(list1[i])
                         resultDict2[host].append(list2[j])
                         result.append([host, list1[i].value, list2[j].value])
+                        
 
     print '-----------------FINAL RESULT-----------------------'
     print '-'*70
@@ -219,11 +231,11 @@ def identifierFiltration(iden1, iden2, hostList, level):
     return resultDict1, resultDict2
 
 def getCommonKeys(dict1, dict2):
-    keys = []
+    commonKeys = []
     for key in dict1.keys():
         if key in dict2.keys():
-            keys.append(key)
-    return keys
+            commonKeys.append(key)
+    return commonKeys
 
 def similarTable(table1, table2, level):
     len1 = len(table1)
@@ -247,8 +259,8 @@ def similarTable(table1, table2, level):
         for item in key1:
             if item in key2:
                 return True
-        else:
-            return False
+        return False
+
     if level == 2:
         # If the identifier happes to be from same key and same start position
         for item in key1:
@@ -257,8 +269,7 @@ def similarTable(table1, table2, level):
                 index2 = key2.index(item)
                 if position1[index1] == position2[index2]:
                     return True
-        else:
-            return False
+        return False
 
 def writeCfg(resultDict, filename):
     config = ConfigParser.RawConfigParser()
@@ -288,8 +299,7 @@ if __name__ == "__main__":
 
     config = ConfigParser.RawConfigParser()
     config.read(cfgFile)
-    database1 = config.get('databases', 'database1')
-    database2 = config.get('databases', 'database2')
+    database1 = config.get('databases', 'database1') database2 = config.get('databases', 'database2')
     level = config.getint('identifiers', 'level')
     try:
         hostList = eval(config.get('hosts', 'host_list'))
@@ -319,9 +329,9 @@ if __name__ == "__main__":
     dict2 = iden2.identifierDict
 
     if (level != 1) and (level != 2) :
-        print 'Only level 1 and 2 are implemented'
+        print 'Only level 1 and 2 filtration are implemented'
     else:
-        print('Start filtration...')
+        print('Start identifier filtration...')
         print('*' * 70)
         resDict1, resDict2 = identifierFiltration(dict1, dict2, candidateHostList, level) 
 
