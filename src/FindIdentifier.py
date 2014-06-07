@@ -30,7 +30,7 @@ def printCommonString(sequences, seq, start, stop, occurance):
 
 def stringArrayDictFromFile(database):
     requestTokens = DataHandler.tokenDictFromFile(database)
-    return requestTokens1.toStringArrayDict()
+    return requestTokens.toStringArrayDict()
 
 
 # FUNCTION:
@@ -181,50 +181,40 @@ def identifierFiltration(iden1, iden2, hostList, level):
     result = []
     resultDict1 = {}
     resultDict2 = {}
-    #commonKey = getCommonKeys(iden1, iden2) 
+
     for host in hostList:
         # Filter out the host without identifiers
         if (host not in iden1.keys() or
             host not in iden2.keys()):
             continue
 
-        # This is identifier list
-        list1 = iden1[host]
-        list2 = iden2[host]
-        commonValue1 = []
-        commonValue2 = []
+        # Get the identifier list
+        idList1 = iden1[host]
+        idList2 = iden2[host]
         
-        # Eliminate the duplicates:
-        for i in range(len(list1)):
-            for j in range(len(list2)):
-                if list1[i].value == list2[j].value:
-                    commonValue1.append(list1[i]) 
-                    commonValue2.append(list2[j]) 
+        # Eliminate the duplicates identifiers between two databases
+        valueList1 = [i.value for i in idList1]
+        valueList2 = [i.value for i in idList2]
+        commonValue = set(valueList1).intersection(set(valueList2))
 
-        set(commonValue1)
-        set(commonValue2)
-        for item in commonValue1:
-            list1.remove(item)
-        for item in commonValue2:
-            list2.remove(item)
+        list1 = [i for i in idList1 if i.value not in commonValue]
+        list2 = [i for i in idList2 if i.value not in commonValue]
             
         # Start to compare
-        for i in range(len(list1)):
-            for j in range(len(list2)):
-                # If tables are similar
-                if similarTable(list1[i].table, list2[j].table, level):
-                    # If the identifier strings are different 
-                    if list1[i].value != list2[j].value:
-                    
-                        if host not in resultDict1.keys():
-                            resultDict1[host] = []
+        for id1 in list1:
+            for id2 in list2:
+                # If tables are similar and the identifier strings are different 
+                if (similarTable(id1.table, id2.table, level) and
+                    id1.value != id2.value):
+                    if host not in resultDict1.keys():
+                        resultDict1[host] = []
+                    resultDict1[host].append(id1)
 
-                        if host not in resultDict2.keys():
-                            resultDict2[host] = []
+                    if host not in resultDict2.keys():
+                        resultDict2[host] = []
+                    resultDict2[host].append(id2)
 
-                        resultDict1[host].append(list1[i])
-                        resultDict2[host].append(list2[j])
-                        result.append([host, list1[i].value, list2[j].value])
+                    result.append([host, id1.value, id2.value])
                         
 
     print '-----------------FINAL RESULT-----------------------'
@@ -354,7 +344,7 @@ if __name__ == "__main__":
 
     level = config.getint('identifiers', 'level')
     if (level != 1) and (level != 2) :
-        raise IndexError, 'Only level 1 and 2 filtration are implemented'
+        raise ValueError, 'Only level 1 and 2 filtration are implemented'
 
 
     # ----------------------------------------------
@@ -379,7 +369,7 @@ if __name__ == "__main__":
                                                                                 stringArrayDict2,
                                                                                 candidateHostList)
     if candidateHostList == []:
-        raise IndexError, "The host list is empty!"
+        raise ValueError, "The host list is empty!"
 
 
     # --------------------------------------
