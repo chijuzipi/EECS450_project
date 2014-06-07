@@ -231,45 +231,28 @@ def identifierFiltration(iden1, iden2, hostList, level):
 
     return resultDict1, resultDict2
 
-def getCommonKeys(dict1, dict2):
-    commonKeys = []
-    for key in dict1.keys():
-        if key in dict2.keys():
-            commonKeys.append(key)
-    return commonKeys
-
 def similarTable(table1, table2, level):
-    len1 = len(table1)
-    len2 = len(table2)
+    keyPos1 = []
+    keyPos2 = []
 
-    position1 = []
-    position2 = []
+    for row in table1:
+        keyPos1.append((row[1], row[3]]))
 
-    key1 = []
-    key2 = []
-
-    for i in range(len1):
-        position1.append(table1[i][1])
-        key1.append(table1[i][3])
-    for i in range(len2):
-        position2.append(table2[i][1])
-        key2.append(table2[i][3])
+    for row in table2:
+        keyPos2.append((row[1], row[3]]))
         
     if level == 1:
         # If the identifiers happens to be from same key
-        for item in key1:
-            if item in key2:
+        for item in zip(*keyPos1)[0]:
+            if item in zip(*keyPos2)[0]:
                 return True
         return False
 
     if level == 2:
         # If the identifier happes to be from same key and same start position
-        for item in key1:
-            if item in key2:
-                index1 = key1.index(item)
-                index2 = key2.index(item)
-                if position1[index1] == position2[index2]:
-                    return True
+        for item in keyPos1:
+            if item in keyPos2:
+                return True
         return False
 
 # FUNCTION:
