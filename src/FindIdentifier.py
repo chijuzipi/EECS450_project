@@ -22,28 +22,32 @@ def printCommonString(sequences, seq, start, stop, occurance):
           unichr(10073) + sequences[seq][stop:]
 
 # FUNCTION:
+#     stringArrayDictFromFile: Extract the stringArrayDict object from the database
+# INPUT:
+#     database  - SQLite database
+# OUTPUT:
+#     A stringArrayDict corresponding to the input database
+
+def stringArrayDictFromFile(database):
+    requestTokens = DataHandler.tokenDictFromFile(database)
+    return requestTokens1.toStringArrayDict()
+
+
+# FUNCTION:
 #     generateHostList: Extract the host list from SQLite database given the constraints
 # INPUT:
-#     database1  - SQLite database file 1
-#     database2  - SQLite database file 2
-#     hostList   - The host list to be processed (Optional)
-#     exceptList - The host list to be ignored during processing (Optional)
-#     minHost    - The start number of the host (Optional)
-#     maxHost    - The end number of the host (Optional)
+#     stringArrayDict1  - The stringArrayDict extracted from the first database
+#     stringArrayDict2  - The stringArrayDict extracted from the second database
+#     hostList          - The host list to be processed (Optional)
+#     exceptList        - The host list to be ignored during processing (Optional)
+#     minHost           - The start number of the host (Optional)
+#     maxHost           - The end number of the host (Optional)
 # OUTPUT:
-#     stringArrayDict1
-#     stringArrayDict2
-#     candidateHostList
+#     candidateHostList - The generated candidate host list
 
-def generateHostList(database1, database2, hostList = None, excepList = None,
+def generateHostList(stringArrayDict1, stringArrayDict2,
+                     hostList = None, excepList = None,
                      minHost = None, maxHost = None):
-    requestTokens1 = DataHandler.tokenDictFromFile(database1)
-    stringArrayDict1 = requestTokens1.toStringArrayDict()
-    print "Finish loading data from " + database1
-
-    requestTokens2 = DataHandler.tokenDictFromFile(database2)
-    stringArrayDict2 = requestTokens2.toStringArrayDict()
-    print "Finish loading data from " + database2
 
     candidateHostList = set(stringArrayDict1.keys()).intersection(set(stringArrayDict2.keys()))
 
@@ -53,6 +57,7 @@ def generateHostList(database1, database2, hostList = None, excepList = None,
     if excepList:
         candidateHostList = candidateHostList.difference(set(excepList))
 
+    # Some exceptions check for minHost and maxHost
     if minHost and maxHost and (minHost >= maxHost):
         raise IndexError, "The MIN value is larger than the MAX value"
 
@@ -62,19 +67,19 @@ def generateHostList(database1, database2, hostList = None, excepList = None,
     if minHost:
         candidateHostList = list(candidateHostList)[minHost:]
 
-    return stringArrayDict1, stringArrayDict2, list(candidateHostList)
+    return list(candidateHostList)
 
 
 # FUNCTION: filterOverlapValues
 #     Clean up the repeated values in the two databases for the same host
 # INPUT: 
-#     stringArrayDict1   : Converted from RequestTokenDict object
-#     stringArrayDict2   : Converted from RequestTokenDict object
-#     candidateHostList  : The list of hosts to be processed(Optional)
+#     stringArrayDict1   - Converted from RequestTokenDict object
+#     stringArrayDict2   - Converted from RequestTokenDict object
+#     candidateHostList  - The list of hosts to be processed(Optional)
 # OUTPUT:
-#     stringArrayDict1   : Updated from the input
-#     stringArrayDict2   : Updated from the input
-#     newHostList        : Remove the host with no sequences after filtering
+#     stringArrayDict1   - Updated from the input
+#     stringArrayDict2   - Updated from the input
+#     newHostList        - Remove the host with no sequences after filtering
 
 def filterOverlapValues(stringArrayDict1, stringArrayDict2, hostList):
     newHostList = []
@@ -102,10 +107,12 @@ def filterOverlapValues(stringArrayDict1, stringArrayDict2, hostList):
 # FUNCTION: identifierDictFromFile
 #     Extract the identifiers from the stringArrayDict and given host list with generalized suffix tree algorithms 
 # INPUT: 
-#     stringArrayDict    : Converted from RequestTokenDict object
-#     candidateHostList  : The list of hosts to be processed(Optional)
+#     stringArrayDict    - Converted from RequestTokenDict object
+#     candidateHostList  - The list of hosts to be processed(Optional)
+#     minLength          - The minimum length of the common string(Default value is 5)
+#     occurance          - The minimum occurance of the common string among the requestes(Default values is 0.5)
 # OUTPUT:
-#     identifierDict     : The dictionay of identifiers for the hosts
+#     identifierDict     - The dictionay of identifiers for the hosts
 
 def identifierDictFromFile(stringArrayDict, candidateHostList = None,
                            minLength = 5, occurance = 0.5):
@@ -159,10 +166,13 @@ def identifierDictFromFile(stringArrayDict, candidateHostList = None,
 #     Compare two common strings found in two database, to tell if they have similary property table but different
 #     string characters.  
 # INPUT: 
-#     stringArrayDict    : Converted from RequestTokenDict object
-#     candidateHostList  : The list of hosts to be processed(Optional)
+#     iden1       - The dictionary stored in the identifierDict object from the first database
+#     iden2       - The dictionary stored in the identifierDict object from the second database
+#     hostList    - The list of hosts to be processed
+#     level       - Different levels of comparison.
 # OUTPUT:
-#     identifierDict     : The dictionay of identifiers for the hosts
+#     resultDict1 - The result dictionary of the first database
+#     resultDict2 - The result dictionary of the second database
 
 def identifierFiltration(iden1, iden2, hostList, level):
     print('*' * 70)
@@ -271,7 +281,37 @@ def similarTable(table1, table2, level):
                     return True
         return False
 
+# FUNCTION:
+#     getHostConstraints: Read the constraints parameters from the config file
+# INPUT:
+#     config   - The ConfigParse object associated with the config file
+#     keyword  - The parameter name in the config file
+# OUTPUT:
+#     constraint - The value of the constraint parameter
+
+def getHostConstraints(config, keyword):
+    validKeyword = ["host_list", "excep_list", "min_host", "max_host"]
+    if keyword not in validKeyword:
+        raise ValueError, "The keyword " + keyword + " is not valid!"
+
+    try:
+        constraint = eval(config.get("hosts", keyword))
+    except:
+        print("The " + keyword + " is not found, use None instead")
+        constraint = None
+
+    return constraint
+
+
+# FUNCTION:
+#     writeCfg: Write the identifier comparison results into a config file
+# INPUT:
+#     resultDict - A dictionary stored the identifier information
+#     filename   - The config file to write
+
 def writeCfg(resultDict, filename):
+    print('Writing the identifiers to ' + filename)
+
     config = ConfigParser.RawConfigParser()
     for host in resultDict.keys():
         idList = resultDict[host]
@@ -297,24 +337,42 @@ if __name__ == "__main__":
         usage()
         sys.exit(0)
 
+
+    # ----------------------------------------------
+    # Read the parameters from the given config file
+    # ----------------------------------------------
     config = ConfigParser.RawConfigParser()
     config.read(cfgFile)
-    database1 = config.get('databases', 'database1') database2 = config.get('databases', 'database2')
+
+    database1 = config.get('databases', 'database1')
+    database2 = config.get('databases', 'database2')
+
+    hostList = getHostConstraints(config, 'host_list')
+    excepList = getHostConstraints(config, 'excep_list')
+    minHost = getHostConstraints(config, 'min_host')
+    maxHost = getHostConstraints(config, 'max_host')
+
     level = config.getint('identifiers', 'level')
-    try:
-        hostList = eval(config.get('hosts', 'host_list'))
-    except:
-        hostList = None
+    if (level != 1) and (level != 2) :
+        raise IndexError, 'Only level 1 and 2 filtration are implemented'
 
-    try:
-        excepList = eval(config.get('hosts', 'excep_list'))
-    except:
-        excepList = None
 
+    # ----------------------------------------------
+    # Begin to process the databases
+    # ----------------------------------------------
+    stringArrayDict1 = stringArrayDictFromFile(database1)
+    print("Finish processing " + database1)
+
+    stringArrayDict2 = stringArrayDictFromFile(database2)
+    print("Finish processing " + database2)
+
+
+    # -------------------------------------------------
+    # Update the host list according to the constraints
+    # -------------------------------------------------
     print("Generating the available host list.....")
-    stringArrayDict1, stringArrayDict2, candidateHostList = generateHostList(database1, database2,
-                                                                             hostList = hostList,
-                                                                             excepList = excepList)
+    candidateHostList = generateHostList(stringArrayDict1, stringArrayDict2,
+                                         hostList = hostList, excepList = excepList)
 
     print("Cleaning the overlap values of the two databases....")
     stringArrayDict1, stringArrayDict2, candidateHostList = filterOverlapValues(stringArrayDict1,
@@ -323,21 +381,26 @@ if __name__ == "__main__":
     if candidateHostList == []:
         raise IndexError, "The host list is empty!"
 
+
+    # --------------------------------------
+    # Find the identifiers for each database
+    # --------------------------------------
     iden1 = identifierDictFromFile(stringArrayDict1, candidateHostList)
     iden2 = identifierDictFromFile(stringArrayDict2, candidateHostList)
     dict1 = iden1.identifierDict
     dict2 = iden2.identifierDict
 
-    if (level != 1) and (level != 2) :
-        print 'Only level 1 and 2 filtration are implemented'
-    else:
-        print('Start identifier filtration...')
-        print('*' * 70)
-        resDict1, resDict2 = identifierFiltration(dict1, dict2, candidateHostList, level) 
 
-        # Write the results into config files
-        print('Writing the identifiers to identifier_user1.cfg')
-        writeCfg(resDict1, 'identifier_user1.cfg')
+    # ---------------------------------------
+    # Filter out the identifers by comparison
+    # ---------------------------------------
+    print('Start identifier filtration...')
+    print('*' * 70)
+    resDict1, resDict2 = identifierFiltration(dict1, dict2, candidateHostList, level) 
 
-        print('Writing the identifiers to identifier_user2.cfg')
-        writeCfg(resDict2, 'identifier_user2.cfg')
+
+    # --------------------------------
+    # Write the results into cfg files
+    # --------------------------------
+    writeCfg(resDict1, 'identifier_user1.cfg')
+    writeCfg(resDict2, 'identifier_user2.cfg')
