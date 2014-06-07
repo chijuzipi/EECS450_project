@@ -22,7 +22,8 @@ def printCommonString(sequences, seq, start, stop, occurance):
           unichr(10073) + sequences[seq][stop:]
 
 # FUNCTION:
-#     stringArrayDictFromFile: Extract the stringArrayDict object from the database
+#     stringArrayDictFromFile: Extract the dict of strings from the database. Each key is host, each value is tuple
+#     (key, sequence, request id)  
 # INPUT:
 #     database  - SQLite database
 # OUTPUT:
@@ -30,7 +31,7 @@ def printCommonString(sequences, seq, start, stop, occurance):
 
 def stringArrayDictFromFile(database):
     requestTokens = DataHandler.tokenDictFromFile(database)
-    return requestTokens1.toStringArrayDict()
+    return requestTokens.toStringArrayDict()
 
 
 # FUNCTION:
@@ -194,7 +195,7 @@ def identifierFiltration(iden1, iden2, hostList, level):
         commonValue1 = []
         commonValue2 = []
         
-        # Eliminate the duplicates:
+        # Eliminate the duplicate identifiers amont two database 
         for i in range(len(list1)):
             for j in range(len(list2)):
                 if list1[i].value == list2[j].value:
