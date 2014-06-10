@@ -46,9 +46,9 @@ Files
 * **SuffixTree.py**: A Unicode-supported generalised suffix tree implementation, forked from http://www.daimi.au.dk/~mailund/suffix_tree.html.
 * **Interface.py**: The interface defined to pass values between pre-processor and identifier finder, and the store format of the identifiers
 * **DataHandler.py**: The pre-processor to process the SQLite database crawled from web.
-# **FindRootPage.py**
-# **IdentifierAnalysis.py**
-# **ThirdPartyMeasure.py**
+* **FindRootPage.py**
+* **IdentifierAnalysis.py**
+* **ThirdPartyMeasure.py**
 
 Generalized Suffix Tree
 -----------------------
