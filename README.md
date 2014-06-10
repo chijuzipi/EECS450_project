@@ -1,6 +1,16 @@
 Finding and Analyzing the Web User identifiers of Third-Party Trackers
 ======================================================================
 
+Installation
+------------
+The generalized suffix tree module is written as a C-extension for python, so you need to compile the source code. Here the [distutils](https://docs.python.org/2/extending/building.html) module of python is used to aid for the compilation.
+```bash
+cd src/suffix_tree-2.1
+$PYTHON2_BIN setup.py build
+cp build/lib.plat/_suffix_tree.so ..
+```
+The **lib.plat** actually depends on your system and python version. In ArchLinux x86_64, it is **lib.linux-x86_64-2.7**
+
 Usage
 -----
 Please use Python 2.x to run the program:
