@@ -5,12 +5,9 @@ import Interface
 import SuffixTree
 import ConfigParser
 import sys
-import gc
-
-#gc.set_debug(gc.DEBUG_STATS | gc.DEBUG_LEAK)
 
 def usage():
-    print("Usage: [python_2.x_bin] FindIdentifier.py [.sqlite file1] [.sqlite file2] [level]")
+    print("Usage: [python_2.x_bin] FindIdentifier.py")
     print("       or set up your own config file")
 
 def printCommonString(sequences, seq, start, stop, occurance):
@@ -149,6 +146,9 @@ def identifierDictFromFile(stringArrayDict, candidateHostList = None,
             stringTable = []
             for seq, start, stop, occurance in shared:
                 stringTable.append([sequences[seq], start, stop, keys[seq], reqId[seq]])
+                printCommonString(sequences, seq, start, stop, occurance)
+
+            print '-' * 70
     
             newIdentifier = Interface.Identifier(sequences[seq][start:stop], stringTable, occurance)
             identifiers.addToDict(host, newIdentifier)
@@ -209,25 +209,29 @@ def identifierFiltration(iden1, iden2, hostList, level):
                     id1.value != id2.value):
                     if host not in resultDict1.keys():
                         resultDict1[host] = []
-                    resultDict1[host].append(id1)
 
                     if host not in resultDict2.keys():
                         resultDict2[host] = []
-                    resultDict2[host].append(id2)
+
+                    if id1 not in resultDict1[host]:
+                        resultDict1[host].append(id1)
+
+                    if id2 not in resultDict2[host]:
+                        resultDict2[host].append(id2)
 
                     result.append([host, id1.value, id2.value])
-                        
 
-    print '-----------------FINAL RESULT-----------------------'
-    print '-'*70
-    print '-'*70
-    print '-'*70
+    # Print out the result and return the dictionaries
+    print '---------------------- FINAL RESULT -----------------------'
+    print '-' * 70
+    print '-' * 70
+    print '-' * 70
     for i in range(len(result)):
         print(result[i][0])
         print(result[i][1])
         print(result[i][2])
-    print '-'*70 
-    print '-'*70 
+    print '-' * 70 
+    print '-' * 70 
 
     return resultDict1, resultDict2
 
@@ -335,20 +339,20 @@ if __name__ == "__main__":
     # Begin to process the databases
     # ----------------------------------------------
     stringArrayDict1 = stringArrayDictFromFile(database1)
-    print("Finish processing " + database1)
+    print("Finish processing " + database1 + '\n')
 
     stringArrayDict2 = stringArrayDictFromFile(database2)
-    print("Finish processing " + database2)
+    print("Finish processing " + database2 + '\n')
 
 
     # -------------------------------------------------
     # Update the host list according to the constraints
     # -------------------------------------------------
-    print("Generating the available host list.....")
+    print("Generating the available host list.....\n")
     candidateHostList = generateHostList(stringArrayDict1, stringArrayDict2,
                                          hostList = hostList, excepList = excepList)
 
-    print("Cleaning the overlap values of the two databases....")
+    print("Cleaning the overlap values of the two databases....\n")
     stringArrayDict1, stringArrayDict2, candidateHostList = filterOverlapValues(stringArrayDict1,
                                                                                 stringArrayDict2,
                                                                                 candidateHostList)

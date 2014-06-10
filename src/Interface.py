@@ -20,8 +20,10 @@ class RequestToken:
 
     def __repr__(self):
         return self.name + "---" + self.value
+
     def __eq__(self, other):
         return self.name == other.name and self.value == other.value and self.host==other.host
+
     def __hash__(self):
         return hash(self.name) ^ hash(self.value) ^ hash(self.host)
 
@@ -116,6 +118,12 @@ class Identifier:
 
     def __repr__(self):
         return self.value + "----" + str(self.occurance)
+
+    def __eq__(self, other):
+        return self.value == other.value and self.table == other.table and self.occurance == other.occurance
+
+    def __hash__(self):
+        return hash(self.value) ^ hash(self.table) ^ hash(self.occurance)
 
 class IdentifierDict:
     def __init__(self):
