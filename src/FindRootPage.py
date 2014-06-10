@@ -31,24 +31,24 @@ def getTopHost(conn, pageId):
     topId = getTopPage(conn, pageId)
     for row in c.execute("SELECT location FROM pages WHERE id = '%d'" % topId):
         topHost=row[0]
-    	return getHost(topHost)
+        return getHost(topHost)
 
 def getRootPage(requestIdSet, sqliteFile):
-	conn = sqlite3.connect(sqliteFile)
-	c = conn.cursor()
-	rootPageDict = dict()
-	for requestId in requestIdSet:
-		for row in c.execute("SELECT page_id FROM http_requests WHERE id = '%d'" % requestId):
-			rootPage = getTopHost(conn,row[0])
-			if rootPage in rootPageDict.keys():
-				rootPageDict[rootPage]+=1
-			else:
-				rootPageDict[rootPage]=1
-	print rootPageDict
+    conn = sqlite3.connect(sqliteFile)
+    c = conn.cursor()
+    rootPageDict = dict()
+    for requestId in requestIdSet:
+        for row in c.execute("SELECT page_id FROM http_requests WHERE id = '%d'" % requestId):
+            rootPage = getTopHost(conn,row[0])
+            if rootPage in rootPageDict.keys():
+                rootPageDict[rootPage]+=1
+            else:
+                rootPageDict[rootPage]=1
+    return rootPageDict
 
 # for test
 if __name__ == "__main__":
-	requestIdSet=set()
-	requestIdSet.add(100)
-	requestIdSet.add(200)
-	getRootPage(requestIdSet, sys.argv[1])
+    requestIdSet=set()
+    requestIdSet.add(100)
+    requestIdSet.add(200)
+    print(getRootPage(requestIdSet, sys.argv[1]))
