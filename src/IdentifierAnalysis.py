@@ -51,6 +51,7 @@ trackReqTot = sum(numReq)
 ratioReq = [x / float(trackReqTot) for x in numReq]
 
 print("The portion of third-party host that can track users")
+print('-' * 50)
 trackHost = numTrackHost / float(numHostTotal)
 print trackHost
 
@@ -58,6 +59,7 @@ print('=' * 70)
 print('\n')
 
 print("The pie diagram for the tracked request")
+print('-' * 50)
 trackReqArray = zip(hosts, numReq, ratioReq)
 for host, req, ratio in trackReqArray:
     print host, req, ratio
@@ -66,6 +68,7 @@ print('=' * 70)
 print('\n')
 
 print("The pie diagram for the identifier locations")
+print('-' * 50)
 trackMethodArray = [['cookie', len([x for x in trackHostMethod if x == 1])],
                     ['param', len([x for x in trackHostMethod if x == 2])],
                     ['cookie and param', len([x for x in trackHostMethod if x == 3])]]
@@ -75,5 +78,6 @@ print('=' * 70)
 print('\n')
 
 print("The number of referred hosts for each tracking host")
+print('-' * 50)
 for host in referredHostNumber.keys():
     print host, referredHostNumber[host]

@@ -236,10 +236,10 @@ def similarTable(table1, table2, level):
     keyPos2 = []
 
     for row in table1:
-        keyPos1.append((row[1], row[3]]))
+        keyPos1.append((row[1], row[3]))
 
     for row in table2:
-        keyPos2.append((row[1], row[3]]))
+        keyPos2.append((row[1], row[3]))
         
     if level == 1:
         # If the identifiers happens to be from same key
