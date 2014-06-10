@@ -11,7 +11,7 @@ A config file is needed to specify the specific databases and related parameters
 ```bash
 $PYTHON2_BIN FindIdentifier.py YourConfigFile.cfg
 ```
-An example of the config file is like this (For the details of the format and how to parse the file, please refer to https://docs.python.org/2/library/configparser.html):
+An example of the config file is like this (For the details of the format and how to parse the file, please refer to [ConfigParser](https://docs.python.org/2/library/configparser.html)):
 ```ini
 [databases]
 database1 = httpfox.sqlite
@@ -46,6 +46,9 @@ Files
 * **SuffixTree.py**: A Unicode-supported generalised suffix tree implementation, forked from http://www.daimi.au.dk/~mailund/suffix_tree.html.
 * **Interface.py**: The interface defined to pass values between pre-processor and identifier finder, and the store format of the identifiers
 * **DataHandler.py**: The pre-processor to process the SQLite database crawled from web.
+# **FindRootPage.py**
+# **IdentifierAnalysis.py**
+# **ThirdPartyMeasure.py**
 
 Generalized Suffix Tree
 -----------------------
